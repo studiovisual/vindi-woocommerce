@@ -7,18 +7,7 @@
  * @return void;
  */
 
-class VindiControllers
-{
-
-  /**
-   * @var string
-   */
-  private $path;
-
-  /**
-   * @var PlansController
-   */
-  public $plans;
+class VindiControllers {
 
   /**
    * @var CustomerController
@@ -26,23 +15,35 @@ class VindiControllers
   public $customers;
 
   /**
+   * @var PlansController
+   */
+  public $plans;
+
+  /**
    * @var ProductController
    */
   public $products;
 
-  function __construct(VindiSettings $vindi_settings)
-  {
+  /**
+   * @var SubscriptionsController
+   */
+  public $subscriptions;
+
+  function __construct(VindiSettings $vindi_settings) {
     $this->includes();
-    $this->plans = new PlansController($vindi_settings);
-    $this->customers = new CustomerController($vindi_settings);
-    $this->products = new ProductController($vindi_settings);
+
+    $this->customers      = new CustomerController($vindi_settings);
+    $this->plans          = new PlansController($vindi_settings);
+    $this->products       = new ProductController($vindi_settings);
+    $this->subscriptions  = new SubscriptionsController($vindi_settings);
   }
 
 
-  function includes()
-  {
-    require_once WC_Vindi_Payment::getPath() . '/controllers/PlansController.php';
+  function includes(){
     require_once WC_Vindi_Payment::getPath() . '/controllers/CustomerController.php';
+    require_once WC_Vindi_Payment::getPath() . '/controllers/PlansController.php';
     require_once WC_Vindi_Payment::getPath() . '/controllers/ProductController.php';
+    require_once WC_Vindi_Payment::getPath() . '/controllers/SubscriptionsController.php';
   }
+
 }
