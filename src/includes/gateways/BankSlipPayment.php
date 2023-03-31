@@ -108,6 +108,7 @@ class VindiBankSlipGateway extends VindiPaymentGateway
 
   public function payment_fields()
   {
+    $id = $this->id;
     $user_country = $this->get_country_code();
 
     if (empty($user_country)) {
@@ -125,7 +126,7 @@ class VindiBankSlipGateway extends VindiPaymentGateway
     if ($is_trial = $this->vindi_settings->get_is_active_sandbox())
       $is_trial = $this->routes->isMerchantStatusTrialOrSandbox();
     
-    $this->vindi_settings->get_template('bankslip-checkout.html.php', compact('is_trial', 'is_single_order'));
+    $this->vindi_settings->get_template('bankslip-checkout.html.php', compact('id', 'is_trial', 'is_single_order'));
   }
 
   public function thank_you_page($order_id)

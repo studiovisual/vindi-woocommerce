@@ -9,33 +9,34 @@
   </div>
 <?php endif; ?>
 
-<fieldset class="vindi-fieldset">
+<vindi-credit-card class="vindi-fieldset">
 
   <?php do_action('vindi_credit_card_form_start', $id); ?>
 
   <?php if(!empty($user_payment_profile)): ?>
-    <div class="vindi-old-cc-data">
+    <div id="vindi-old-cc-data" class="vindi-old-cc-data">
       <p class="form-row">
         <label>
           <?php _e("Cartão Cadastrado", VINDI); ?>
         </label>
         <br>
-        <?php echo $user_payment_profile['holder_name']; ?><br>
-        <div class="vindi-old-paymentcompany" style="background: url('https://s3.amazonaws.com/recurrent/payment_companies/<?php echo $user_payment_profile['payment_company']?>.png') no-repeat center right; background-size: auto 90%;">
-          <?php echo $user_payment_profile['card_number']; ?>
-        </div>
+        <span class="vindi-old-payment-name"><?php echo $user_payment_profile['holder_name']; ?></span><br>
+        <span class="vindi-old-payment-number"><?php echo $user_payment_profile['card_number']; ?></span>
+          
         <input class="vindi-old-cc-data-check" type="hidden" value='1' name="vindi-old-cc-data-check">
       </p>
 
+      <img class="vindi-old-paymentcompany" src="https://s3.amazonaws.com/recurrent/payment_companies/<?php echo $user_payment_profile['payment_company']?>.png" />
+
       <p class="form-row">
-        <a href="#" class="vindi-change-card"><?php echo __('usar outro cartão', VINDI); ?></a>
+        <a id="vindi-change-card" href="#" class="vindi-change-card"><?php echo __('Usar outro cartão', VINDI); ?></a>
       </p>
     </div>
   <?php endif; ?>
 
-  <div class='vindi-new-cc-data' style="<?php if(!empty($user_payment_profile)) echo 'display: none'; ?>">
+  <div id="vindi-new-cc-data" class='vindi-new-cc-data' style="<?php if(!empty($user_payment_profile)) echo 'display: none'; ?>">
     <div class="vindi_cc_card-container vindi_cc_preload">
-      <div class="vindi_cc_creditcard">
+      <div id="vindi_cc_creditcard" class="vindi_cc_creditcard">
         <div class="front">
           <div id="vindi_cc_ccsingle"></div>
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="vindi_cc_cardfront" x="0px" y="0px" viewBox="0 0 750 471" style="enable-background:new 0 0 750 471;" xml:space="preserve">
@@ -55,16 +56,16 @@
                   <path xmlns="http://www.w3.org/2000/svg" class="vindi_cc_lightcolor" d="M 0 0 V 370 C 262 360 570 198 600 0"/>
                 </g>
               </g>
-              <text transform="matrix(1 0 0 1 60.106 295.0121)" id="vindi_cc_svgnumber" class="st2 st3 st4">0123 4567 8910 1112</text>
-              <text transform="matrix(1 0 0 1 54.1064 428.1723)" id="vindi_cc_svgname" class="st2 st5 st6">JOÃO DA SILVA</text>
+              <text transform="matrix(1 0 0 1 60.106 295.0121)" id="vindi_cc_svgnumber" class="st2 st3 st4">#### #### #### ####</text>
+              <text transform="matrix(1 0 0 1 54.1064 428.1723)" id="vindi_cc_svgname" class="st2 st5 st6">Nome completo</text>
               <text transform="matrix(1 0 0 1 54.1074 389.8793)" class="st7 st5 st8"><?php _e("Nome", VINDI); ?></text>
-              <text transform="matrix(1 0 0 1 479.7754 388.8793)" class="st7 st5 st8"><?php _e("Validade", VINDI); ?></text>
-              <text transform="matrix(1 0 0 1 65.1054 241.5)" class="st7 st5 st8"><?php _e("Número do Cartão", VINDI); ?></text>
+              <text transform="matrix(1 0 0 1 570 388.8793)" class="st7 st5 st8"><?php _e("Validade", VINDI); ?></text>
+              <text transform="matrix(1 0 0 1 65.1054 241.5)" class="st7 st5 st8"><?php _e("Número do cartão", VINDI); ?></text>
               <g>
-                <text transform="matrix(1 0 0 1 574.4219 433.8095)" id="vindi_cc_svgexpire" class="st2 st5 st9">01/23</text>
-                <text transform="matrix(1 0 0 1 479.3848 417.0097)" class="st2 st10 st11">VALID</text>
-                <text transform="matrix(1 0 0 1 479.3848 435.6762)" class="st2 st10 st11">THRU</text>
-                <polygon class="st2" points="554.5,421 540.4,414.2 540.4,427.9"/>
+                <text transform="matrix(1 0 0 1 574.4219 433.8095)" id="vindi_cc_svgexpire" class="st2 st5 st9">00/00</text>
+                <!-- <text transform="matrix(1 0 0 1 479.3848 417.0097)" class="st2 st10 st11">VALID</text>
+                <text transform="matrix(1 0 0 1 479.3848 435.6762)" class="st2 st10 st11">THRU</text> -->
+                <!-- <polygon class="st2" points="554.5,421 540.4,414.2 540.4,427.9"/> -->
               </g>
               <g id="cchip">
                 <g>
@@ -118,13 +119,13 @@
                 <rect x="42.9" y="224.5" class="st4" width="664.1" height="10.5" />
                 <path class="st5" d="M701.1,184.6H618h-8h-10v64.5h10h8h83.1c3.3,0,6-2.7,6-6v-52.5C707.1,187.3,704.4,184.6,701.1,184.6z" />
               </g>
-              <text transform="matrix(1 0 0 1 621.999 227.2734)" id="vindi_cc_svgsecurity" class="st6 st7">985</text>
+              <text transform="matrix(1 0 0 1 621.999 227.2734)" id="vindi_cc_svgsecurity" class="st6 st7">000</text>
               <g class="st8">
                 <text transform="matrix(1 0 0 1 630.083 280.0879)" class="st9 st6 st10"><?php _e("CVC", VINDI); ?></text>
               </g>
               <rect x="58.1" y="378.6" class="st11" width="375.5" height="13.5" />
               <rect x="58.1" y="405.6" class="st11" width="421.7" height="13.5" />
-              <text transform="matrix(1 0 0 1 59.5073 228.6099)" id="vindi_cc_svgnameback" class="st12 st13">João da Silva</text>
+              <text transform="matrix(1 0 0 1 59.5073 228.6099)" id="vindi_cc_svgnameback" class="st12 st13">Nome completo</text>
             </g>
           </svg>
         </div>
@@ -132,35 +133,64 @@
     </div>
     <div class="vindi_cc_form-container">
       <div class="field-container">
-        <label for="vindi_cc_name">
-          <?php _e("Nome Impresso no Cartão", VINDI); ?>
-          <span class="required">*</span>
-        </label>
-        <input id="vindi_cc_name" name="vindi_cc_fullname" maxlength="20" type="text">
-      </div>
-      <div class="field-container">
+        <?php do_action('vindi_cc_before_cardnumber') ?>
+
         <label for="vindi_cc_cardnumber">
-          <?php _e("Número do Cartão", VINDI); ?>
+          <?php _e("Número do cartão", VINDI); ?>
           <span class="required">*</span>
         </label>
-        <input id="vindi_cc_cardnumber" name="vindi_cc_number" type="text" pattern="[0-9]*" inputmode="numeric" autocomplete="off" placeholder="•••• •••• •••• ••••">
+
+        <input id="vindi_cc_cardnumber" name="vindi_cc_number" type="tel" inputmode="numeric" autocomplete="off" placeholder="0000 0000 0000 0000">
+
         <svg id="vindi_cc_ccicon" class="vindi_cc_ccicon" width="750" height="471" viewBox="0 0 750 471" version="1.1" xmlns="http://www.w3.org/2000/svg"
           xmlns:xlink="http://www.w3.org/1999/xlink">
         </svg>
+
+        <small>Digite um número válido</small>
+
+        <?php do_action('vindi_cc_after_cardnumber') ?>
       </div>
       <div class="field-container">
+        <?php do_action('vindi_cc_before_name') ?>
+
+        <label for="vindi_cc_name">
+          <?php _e("Nome como impresso no cartão", VINDI); ?>
+          <span class="required">*</span>
+        </label>
+
+        <input id="vindi_cc_name" name="vindi_cc_fullname" maxlength="26" type="text" placeholder="Até 26 caracteres">
+
+        <small>Digite um nome válido</small>
+
+        <?php do_action('vindi_cc_after_name') ?>
+      </div>
+      <div class="field-container">
+        <?php do_action('vindi_cc_before_expirationdate') ?>
+
         <label for="vindi_cc_expirationdate">
-          <?php _e("Validade (mm/aa)", VINDI) ?>
+          <?php _e("Data de expiração", VINDI) ?>
           <span class="required">*</span>
         </label>
-        <input id="vindi_cc_expirationdate" type="text" pattern="[0-9]*" inputmode="numeric" placeholder="mm/aa" autocomplete="off">
+
+        <input id="vindi_cc_expirationdate" type="tel" inputmode="numeric" placeholder="mm/aa" autocomplete="off">
+
+        <small>Digite uma data válida</small>
+
+        <?php do_action('vindi_cc_after_expirationdate') ?>
       </div>
       <div class="field-container">
+        <?php do_action('vindi_cc_before_securitycode') ?>
+
         <label for="vindi_cc_securitycode">
-          <?php _e("Código de Segurança", VINDI); ?>
+          <?php _e("Código de segurança", VINDI); ?>
           <span class="required">*</span>
         </label>
-        <input id="vindi_cc_securitycode" name="vindi_cc_cvc" type="text" pattern="[0-9]*" inputmode="numeric" placeholder="CVC" autocomplete="off">
+
+        <input id="vindi_cc_securitycode" name="vindi_cc_cvc" type="tel" inputmode="numeric" placeholder="000" autocomplete="off">
+
+        <small>Digite um cvv válido</small>
+
+        <?php do_action('vindi_cc_after_securitycode') ?>
       </div>
       <input name="vindi_cc_paymentcompany" type="hidden">
       <input name="vindi_cc_monthexpiry" type="hidden">
@@ -185,4 +215,4 @@
   <?php do_action('vindi_credit_card_form_end', $id); ?>
 
   <div class="clear"></div>
-</fieldset>
+</vindi-credit-card>

@@ -251,16 +251,17 @@ class VindiApi
       'body'      => $body,
     ));
 
+    $response_body = wp_remote_retrieve_body($response);
+    $response_body_array = json_decode($response_body, true);
+
     if (is_wp_error($response)) {
       $this->logger->log(sprintf("[Request #%s]: Erro ao fazer request! %s", $request_id, print_r($response, true)));
 
-      return false;
+      return $response_body_array;
     }
 
     $status = sprintf('%s %s', $response['response']['code'], $response['response']['message']);
     $this->logger->log(sprintf("[Request #%s]: Nova Resposta da API.\n%s\n%s", $request_id, $status, print_r($response['body'], true)));
-
-    $response_body = wp_remote_retrieve_body($response);
 
     if (!$response_body) {
       $this->logger->log(sprintf('[Request #%s]: Erro ao recuperar corpo do request! %s', $request_id, print_r($response, true)));
@@ -268,11 +269,7 @@ class VindiApi
       return false;
     }
 
-    $response_body_array = json_decode($response_body, true);
-
-    if (!$this->check_response($response_body_array)) {
-      return false;
-    }
+    $this->check_response($response_body_array);
 
     return $response_body_array;
   }

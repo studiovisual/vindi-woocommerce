@@ -27,7 +27,7 @@ class VindiCreditGateway extends VindiPaymentGateway
   /**
    * @var int
    */
-  private $max_installments = 12;
+  private $max_installments = 12; 
 
   /**
    * @var int
@@ -152,7 +152,6 @@ class VindiCreditGateway extends VindiPaymentGateway
   public function payment_fields()
   {
     $id = $this->id;
-    $is_trial = $this->is_trial;
 
     $cart = $this->vindi_settings->woocommerce->cart;
     $total = $cart->total;
@@ -162,8 +161,9 @@ class VindiCreditGateway extends VindiPaymentGateway
       }
     }
 
-    $max_times  = 12;
-    $max_times  = $this->get_order_max_installments($total);
+    $installments = array();
+    $max_times    = 12;
+    $max_times    = $this->get_order_max_installments($total);
     
     if ($max_times > 1) {
       for ($times = 1; $times <= $max_times; $times++) {
@@ -187,6 +187,7 @@ class VindiCreditGateway extends VindiPaymentGateway
       $is_trial = $this->routes->isMerchantStatusTrialOrSandbox();
 
     $this->vindi_settings->get_template('creditcard-checkout.html.php', compact(
+      'id',
       'installments',
       'is_trial',
       'user_payment_profile',
@@ -243,7 +244,7 @@ class VindiCreditGateway extends VindiPaymentGateway
       $payment_profile = $this->routes->getPaymentProfile($user_vindi_id);
     }
 
-    if($payment_profile['type'] !== 'PaymentProfile::CreditCard')
+    if(!empty($payment_profile) && $payment_profile['type'] !== 'PaymentProfile::CreditCard')
       return $user_payment_profile;
 
     if(false === empty($payment_profile)) {
@@ -252,7 +253,7 @@ class VindiCreditGateway extends VindiPaymentGateway
       $user_payment_profile['card_number']     = sprintf('**** **** **** %s', $payment_profile['card_number_last_four']);
     }
 
-    WC()->session->set('current_payment_profile', $payment_profile); 
+    // WC()->session->set('current_payment_profile', $payment_profile); 
     return $user_payment_profile;
   }
 

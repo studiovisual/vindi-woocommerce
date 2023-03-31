@@ -12,7 +12,7 @@
 
 	<?php do_action('vindi_bank_slip_form_start', $id); ?>
 
-	<div class="vindi-invoice-description" style="padding: 20px 0; font-weight: bold;">
+	<div class="vindi-invoice-description">
 		<?php
 		if ($is_single_order){
 			_e('Um Boleto Bancário será enviado para o seu endereço de e-mail.', VINDI);

@@ -195,6 +195,7 @@ abstract class VindiPaymentGateway extends WC_Payment_Gateway_CC
     } catch (Exception $e) {
       $response = array(
         'result'   => 'fail',
+        'message'  => $e->getMessage(),
         'redirect' => '',
       );
     }

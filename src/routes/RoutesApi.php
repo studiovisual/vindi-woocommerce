@@ -84,6 +84,7 @@ class VindiRoutes
   {
 
     $response = $this->api->request('products', 'POST', $data);
+    
     return $response['product'];
   }
 
@@ -115,7 +116,8 @@ class VindiRoutes
   {
 
     $response = $this->api->request('customers', 'POST', $data);
-    return $response['customer'];
+
+    return isset($response['customer']) ? $response['customer'] : false;
   }
 
   /**
@@ -127,7 +129,6 @@ class VindiRoutes
    */
   public function updateCustomer($user_id, $data)
   {
-
     $response = $this->api->request(sprintf(
       'customers/%s',
       filter_var($user_id, FILTER_SANITIZE_NUMBER_INT)
@@ -145,13 +146,12 @@ class VindiRoutes
    */
   public function deleteCustomer($user_id)
   {
-
     $response = $this->api->request(sprintf(
       'customers/%s',
       filter_var($user_id, FILTER_SANITIZE_NUMBER_INT)
     ), 'DELETE');
 
-    return $response['customer'];
+    return isset($response['customer']) ? $response['customer'] : false;
   }
 
 
@@ -184,7 +184,6 @@ class VindiRoutes
   {
     if (($response = $this->api->request('subscriptions', 'POST', $data)) &&
       isset($response['subscription']['id'])) {
-
       $subscription         = $response['subscription'];
       $subscription['bill'] = $response['bill'];
 
@@ -277,12 +276,15 @@ class VindiRoutes
   {
     // Protect credit card number.
     $log = $data;
-    $log['card_number'] = sprintf('**** *%s', substr($log['card_number'], -3));
-    $log['card_cvv'] = '***';
+
+    if(isset($log['card_number'])):
+      $log['card_number'] = sprintf('**** *%s', substr($log['card_number'], -3));
+      $log['card_cvv'] = '***';
+    endif;
 
     $response = $this->api->request('payment_profiles', 'POST', $data, $log);
 
-    return $response['payment_profile'];
+    return is_array($response) ? (isset($response['payment_profile']) ? $response['payment_profile'] : $response) : false;
   }
 
   public function findProductByCode($code)
@@ -389,7 +391,7 @@ class VindiRoutes
 
   public function isMerchantStatusTrialOrSandbox($is_config = false)
   {
-    if ('yes' === $this->sandbox)
+    if ('yes' === $this->vindi_settings->settings['sandbox'])
       return true;
 
     $merchant = $is_config ? $this->getMerchant($is_config) : $this->getMerchant();

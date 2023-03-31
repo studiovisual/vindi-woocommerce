@@ -99,7 +99,7 @@ class VindiPaymentProcessor
         if ($this->is_cc()) {
             $this->create_payment_profile($vindi_customer['id']);
         } else {
-            $this->create_payment_profile_bank_slip($vindi_customer['id']);
+            // $this->create_payment_profile_bank_slip($vindi_customer['id']);
         }
 
         return $vindi_customer;
@@ -115,9 +115,7 @@ class VindiPaymentProcessor
      */
     public function create_payment_profile_bank_slip($customer_id)
     {
-
-        if ($this->is_bank_slip) {
-
+        if ($this->is_bank_slip()) {
             $payment_info = $this->get_bank_slip_payment_type($customer_id);
             $payment_profile = $this->routes->createCustomerPaymentProfile($payment_info);
 
@@ -140,7 +138,7 @@ class VindiPaymentProcessor
      */
     public function get_cc_payment_type($customer_id)
     {
-        if ($this->gateway->verify_user_payment_profile()) {
+        if (method_exists($this->gateway, 'verify_user_payment_profile') && $this->gateway->verify_user_payment_profile()) {
             return false;
         }
 
@@ -163,8 +161,8 @@ class VindiPaymentProcessor
      * @return array
      */
     public function get_bank_slip_payment_type($customer_id)
-    {
-        if ($this->gateway->verify_user_payment_profile()) {
+    {        
+        if (method_exists($this->gateway, 'verify_user_payment_profile') && $this->gateway->verify_user_payment_profile()) {
             return false;
         }
         return array(
@@ -392,8 +390,20 @@ class VindiPaymentProcessor
 
         $payment_profile = $this->routes->createCustomerPaymentProfile($cc_info);
 
-        if (!$payment_profile) {
-            $this->abort(__('Falha ao registrar o método de pagamento. Verifique os dados e tente novamente.', VINDI), true);
+        if(empty($payment_profile) || isset($payment_profile['errors'])) {
+            $message = __('Falha ao registrar o método de pagamento. Verifique os dados e tente novamente.', VINDI);
+
+            // if(isset($payment_profile['errors'])) {
+            //     $message .= '<br />';
+
+            //     foreach($payment_profile['errors'] as $error)
+            //         $message .= '<br />' . $error['parameter'] . ' ' . $error['message'];
+            // }
+
+            $this->abort(
+                $message,
+                 true
+            );
         }
 
         if ($this->gateway->verify_method()) {
@@ -474,7 +484,7 @@ class VindiPaymentProcessor
      *
      * @throws Exception
      */
-    public function build_product_items($order_type = 'bill', $product)
+    public function build_product_items($order_type = 'bill', $product = [])
     {
         $call_build_items = "build_product_items_for_{$order_type}";
 
@@ -567,6 +577,9 @@ class VindiPaymentProcessor
     protected function build_sign_up_fee_item($order_items)
     {
         foreach ($order_items as $order_item) {
+            if(!is_a($order_item, 'WC_Order_Item_Product'))
+                continue;
+                
             $product = method_exists($order_item, 'get_product') ? $order_item->get_product() : false;
             
             if(!$product)

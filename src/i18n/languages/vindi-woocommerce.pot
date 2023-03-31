@@ -432,7 +432,7 @@ msgid "Cartão Cadastrado"
 msgstr ""
 
 #: templates/creditcard-checkout.html.php:31
-msgid "usar outro cartão"
+msgid "Usar outro cartão"
 msgstr ""
 
 #: templates/creditcard-checkout.html.php:60
@@ -445,7 +445,7 @@ msgstr ""
 
 #: templates/creditcard-checkout.html.php:62
 #: templates/creditcard-checkout.html.php:143
-msgid "Número do Cartão"
+msgid "Número do cartão"
 msgstr ""
 
 #: templates/creditcard-checkout.html.php:123
@@ -453,15 +453,15 @@ msgid "CVC"
 msgstr ""
 
 #: templates/creditcard-checkout.html.php:136
-msgid "Nome Impresso no Cartão"
+msgid "Nome como impresso no cartão"
 msgstr ""
 
 #: templates/creditcard-checkout.html.php:153
-msgid "Validade (mm/aa)"
+msgid "Data de expiração"
 msgstr ""
 
 #: templates/creditcard-checkout.html.php:160
-msgid "Código de Segurança"
+msgid "Código de segurança"
 msgstr ""
 
 #: templates/creditcard-checkout.html.php:173

@@ -81,6 +81,8 @@ class VindiSettings extends WC_Settings_API
       add_action('woocommerce_coupon_options_save', 'CouponsMetaBox::save', 10, 2);
       add_action('woocommerce_coupon_discount_types', 'CouponsMetaBox::remove_ws_recurring_discount', 10, 1);
       add_action('admin_notices', array(&$this, 'wcs_automatic_payment_settings'));
+
+      add_filter('woocommerce_general_settings', array($this, 'addStoreAddressFields'));
     }
   }
 
@@ -343,4 +345,27 @@ class VindiSettings extends WC_Settings_API
         
         return;
     }
+
+  function addStoreAddressFields($settings) {
+    array_splice($settings, 2, 0, array(
+        array(
+          'title'    => __('Number', 'woocommerce-extra-checkout-fields-for-brazil'),
+          'id'       => 'woocommerce_store_number',
+          'default'  => '',
+          'type'     => 'text',
+        ),
+    ));
+
+    array_splice($settings, 4, 0, array(
+      array(
+        'title'    => __('Neighborhood', 'woocommerce-extra-checkout-fields-for-brazil'),
+        'id'       => 'woocommerce_store_neighborhood',
+        'default'  => '',
+        'type'     => 'text',
+      ),
+    ));
+
+    return $settings;
+  }
+
 }

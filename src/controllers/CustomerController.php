@@ -60,53 +60,54 @@ class CustomerController
       );
     }
 
+    $metadata = array();
+    if ('2' === $customer->get_meta('billing_persontype')) {
+      // Pessoa jurídica
+      $name = $customer->get_billing_company();
+      $cpf_or_cnpj = $customer->get_meta('billing_cnpj');
+      $notes = sprintf('Nome: %s %s', $customer->get_billing_first_name(), $customer->get_billing_last_name());
 
-    if($order && method_exists($order, 'needs_payment')) {
-      $metadata = array();
-      if ('2' === $order->get_meta('_billing_persontype')) {
-        // Pessoa jurídica
-        $name = $order->get_billing_company();
-        $cpf_or_cnpj = $order->get_meta('_billing_cnpj');
-        $notes = sprintf('Nome: %s %s', $order->get_billing_first_name(), $order->get_billing_last_name());
+      if ($this->vindi_settings->send_nfe_information()) {
+        $metadata['inscricao_estadual'] = $customer->get_meta('billing_ie');
+      }
+    } else {
+      // Pessoa física
+      $cpf_or_cnpj = $customer->get_meta('billing_cpf');
+      $notes = '';
 
-        if ($this->vindi_settings->send_nfe_information()) {
-          $metadata['inscricao_estadual'] = $order->get_meta('_billing_ie');
-        }
-      } else {
-        // Pessoa física
-        $cpf_or_cnpj = $order->get_meta('_billing_cpf');
-        $notes = '';
-
-        if ($this->vindi_settings->send_nfe_information()) {
-          $metadata['carteira_de_identidade'] = $order->get_meta('_billing_rg');
-        }
+      if ($this->vindi_settings->send_nfe_information()) {
+        $metadata['carteira_de_identidade'] = $customer->get_meta('billing_rg');
       }
     }
 
+    $address = [
+      'street'             => ($customer->get_billing_address_1()) ? $customer->get_billing_address_1() : WC()->countries->get_base_address(),
+      'number'             => ($customer->get_meta('billing_number')) ? $customer->get_meta('billing_number') : get_option('woocommerce_store_number', ''),
+      'additional_details' => ($customer->get_billing_address_2()) ?  $customer->get_billing_address_2() : WC()->countries->get_base_address_2(),
+      'zipcode'            => ($customer->get_billing_postcode()) ? $customer->get_billing_postcode() : WC()->countries->get_base_postcode(),
+      'neighborhood'       => ($customer->get_meta('billing_neighborhood')) ? $customer->get_meta('billing_neighborhood') : get_option('woocommerce_store_neighborhood', ''),
+      'city'               => ($customer->get_billing_city()) ? $customer->get_billing_city() : WC()->countries->get_base_city(),
+      'state'              => ($customer->get_billing_state()) ? $customer->get_billing_state() : WC()->countries->get_base_state(),
+      'country'            => ($customer->get_billing_country()) ? $customer->get_billing_country() : WC()->countries->get_base_country(),
+    ];
+
     $createdUser = $this->routes->createCustomer(
       array(
-        'name' => $name,
-        'email' => ($user['email']) ? $user['email'] : '',
-        'code' => 'WC-USER-'.$user['id'],
-        'address' => array(
-          'street' => ($customer->get_billing_address_1()) ? $customer->get_billing_address_1() : '',
-          'number' => ($customer->get_meta('billing_number')) ? $customer->get_meta('billing_number') : '',
-          'additional_details' => ($customer->get_billing_address_2()) ?  $customer->get_billing_address_2() : '',
-          'zipcode' => ($customer->get_billing_postcode()) ? $customer->get_billing_postcode() : '',
-          'neighborhood' => ($customer->get_meta('billing_neighborhood')) ? $customer->get_meta('billing_neighborhood') : '',
-          'city' => ($customer->get_billing_city()) ? $customer->get_billing_city() : '',
-          'state' => ($customer->get_billing_state()) ? $customer->get_billing_state() : '',
-          'country' => ($customer->get_billing_country()) ? $customer->get_billing_country() : ''
-        ),
-        'phones' => $phones,
+        'name'          => $name,
+        'email'         => ($user['email']) ? $user['email'] : '',
+        'code'          => 'WC-USER-'.$user['id'],
+        'address'       => apply_filters('vindi_user_address', $address),
+        'phones'        => $phones,
         'registry_code' => $cpf_or_cnpj ? $cpf_or_cnpj : '',
-        'notes' => $notes ? $notes : '',
-        'metadata' => !empty($metadata) ? $metadata : '',
+        'notes'         => $notes ? $notes : '',
+        'metadata'      => !empty($metadata) ? $metadata : '',
       )
     );
 
     // Saving customer in the user meta WP
-    update_user_meta($user_id, 'vindi_customer_id', $createdUser['id']);
+    if(isset($createdUser['id']))
+      update_user_meta($user_id, 'vindi_customer_id', $createdUser['id']);
+      
     return $createdUser;
   }
 
@@ -120,19 +121,16 @@ class CustomerController
 
   function update($user_id, $order = null)
   {
-
     $vindi_customer_id = get_user_meta($user_id, 'vindi_customer_id', true);
-
+    
     // Check meta Vindi ID
-    if (empty($vindi_customer_id)) {
-
+    if(empty($vindi_customer_id))
       return $this->create($user_id, $order);
-    }
 
     // Check user exists in Vindi
     $vindiUser = $this->routes->findCustomerById($vindi_customer_id);
-    if (!$vindiUser) {
 
+    if (!$vindiUser) {
       return $this->create($user_id);
     }
 
@@ -151,69 +149,73 @@ class CustomerController
       if ($vindi_phones['mobile']) $mobile['id'] = $vindi_phones['mobile'];
       $phones[] = $mobile;
     }
+    
     if ($customer->get_billing_phone()) {
       $landline = array(
         'phone_type' => 'landline',
         'number' => preg_replace('/\D+/', '', '55' . $customer->get_billing_phone())
       );
-      if ($vindi_phones['landline']) $landline['id'] = $vindi_phones['landline'];
+      
+      if (isset($vindi_phones['landline'])) 
+        $landline['id'] = $vindi_phones['landline'];
+
       $phones[] = $landline;
     }
 
     $name = (!$user['first_name']) ? $user['display_name'] : $user['first_name'] . ' ' . $user['last_name'];
     $notes = null;
     $cpf_or_cnpj = null;
-    $metadata = null;
+    $metadata = null;    
+    $metadata = array();
 
+    if('2' === $customer->get_meta('billing_persontype')) {
+      // Pessoa jurídica
+      $name = $customer->get_billing_company();
+      $cpf_or_cnpj = $customer->get_meta('billing_cnpj');
+      $notes = sprintf('Nome: %s %s', $customer->get_billing_first_name(), $customer->get_billing_last_name());
 
-    if($order && method_exists($order, 'needs_payment')) {
-      $metadata = array();
-      if ('2' === $order->get_meta('_billing_persontype')) {
-        // Pessoa jurídica
-        $name = $order->get_billing_company();
-        $cpf_or_cnpj = $order->get_meta('_billing_cnpj');
-        $notes = sprintf('Nome: %s %s', $order->get_billing_first_name(), $order->get_billing_last_name());
+      if($this->vindi_settings->send_nfe_information())
+        $metadata['inscricao_estadual'] = $customer->get_meta('billing_ie');
+    } 
+    else {
+      // Pessoa física
+      $cpf_or_cnpj = $customer->get_meta('billing_cpf');
+      $this->vindi_settings->logger->log(sprintf('Order cpf -> %s', $cpf_or_cnpj));
+      $this->vindi_settings->logger->log(sprintf('Customer cpf -> %s', $customer->get_meta('billing_cpf')));
+      $notes = '';
 
-        if ($this->vindi_settings->send_nfe_information()) {
-          $metadata['inscricao_estadual'] = $order->get_meta('_billing_ie');
-        }
-      } else {
-        // Pessoa física
-        $cpf_or_cnpj = $order->get_meta('_billing_cpf');
-        $this->vindi_settings->logger->log(sprintf('Order cpf -> %s', $cpf_or_cnpj));
-        $this->vindi_settings->logger->log(sprintf('Customer cpf -> %s', $customer->get_meta('billing_cpf')));
-        $notes = '';
-
-        if ($this->vindi_settings->send_nfe_information()) {
-          $metadata['carteira_de_identidade'] = $order->get_meta('_billing_rg');
-        }
-        $this->vindi_settings->logger->log(sprintf('Order rg -> %s', $order->get_meta('_billing_rg')));
-      }
+      if($this->vindi_settings->send_nfe_information())
+        $metadata['carteira_de_identidade'] = $customer->get_meta('billing_rg');
+      
+      $this->vindi_settings->logger->log(sprintf('Order rg -> %s', $customer->get_meta('billing_rg')));
     }
+
+    $address = [
+      'street'             => ($customer->get_billing_address_1()) ? $customer->get_billing_address_1() : WC()->countries->get_base_address(),
+      'number'             => ($customer->get_meta('billing_number')) ? $customer->get_meta('billing_number') : get_option('woocommerce_store_number', ''),
+      'additional_details' => ($customer->get_billing_address_2()) ?  $customer->get_billing_address_2() : WC()->countries->get_base_address_2(),
+      'zipcode'            => ($customer->get_billing_postcode()) ? $customer->get_billing_postcode() : WC()->countries->get_base_postcode(),
+      'neighborhood'       => ($customer->get_meta('billing_neighborhood')) ? $customer->get_meta('billing_neighborhood') : get_option('woocommerce_store_neighborhood', ''),
+      'city'               => ($customer->get_billing_city()) ? $customer->get_billing_city() : WC()->countries->get_base_city(),
+      'state'              => ($customer->get_billing_state()) ? $customer->get_billing_state() : WC()->countries->get_base_state(),
+      'country'            => ($customer->get_billing_country()) ? $customer->get_billing_country() : WC()->countries->get_base_country(),
+    ];
 
     // Update customer profile
     $updatedUser = $this->routes->updateCustomer(
       $vindi_customer_id,
       array(
-        'name' => $name,
-        'email' => ($user['email']) ? $user['email'] : '',
-        'code' => 'WC-USER-'.$user['id'],
-        'address' => array(
-          'street' => ($customer->get_billing_address_1()) ? $customer->get_billing_address_1() : '',
-          'number' => ($customer->get_meta('billing_number')) ? $customer->get_meta('billing_number') : '',
-          'additional_details' => ($customer->get_billing_address_2()) ?  $customer->get_billing_address_2() : '',
-          'zipcode' => ($customer->get_billing_postcode()) ? $customer->get_billing_postcode() : '',
-          'neighborhood' => ($customer->get_meta('billing_neighborhood')) ? $customer->get_meta('billing_neighborhood') : '',
-          'city' => ($customer->get_billing_city()) ? $customer->get_billing_city() : '',
-          'state' => ($customer->get_billing_state()) ? $customer->get_billing_state() : '',
-          'country' => ($customer->get_billing_country()) ? $customer->get_billing_country() : ''
-        ),
-        'phones' => $phones,
+        'name'          => $name,
+        'email'         => ($user['email']) ? $user['email'] : '',
+        'code'          => 'WC-USER-'.$user['id'],
+        'address'       => apply_filters('vindi_user_address', $address),
+        'phones'        => $phones,
         'registry_code' => $cpf_or_cnpj ? $cpf_or_cnpj : '',
-        'notes' => $notes ? $notes : '',
-        'metadata' => !empty($metadata) ? $metadata : '',
+        'notes'         => $notes ? $notes : '',
+        'metadata'      => !empty($metadata) ? $metadata : '',
       )
     );
+    
     return $updatedUser;
   }
 
@@ -231,23 +233,16 @@ class CustomerController
     $vindi_customer_id = get_user_meta($user_id, 'vindi_customer_id', true);
 
     // Check meta Vindi ID
-    if (empty($vindi_customer_id)) {
-
+    if(empty($vindi_customer_id))
       return;
-    }
 
     // Check user exists in Vindi
     $vindiUser = $this->routes->findCustomerById($vindi_customer_id);
-    if (!$vindiUser) {
 
+    if(empty($vindiUser))
       return;
-    }
 
     // Delete customer profile
-    $deletedUser = $this->routes->deleteCustomer(
-      $vindi_customer_id
-    );
-
-    return $deletedUser;
+    $this->routes->deleteCustomer($vindi_customer_id);
   }
 }
