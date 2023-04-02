@@ -35,7 +35,7 @@ class VindiControllers {
     $this->customers      = new CustomerController($vindi_settings);
     $this->plans          = new PlansController($vindi_settings);
     $this->products       = new ProductController($vindi_settings);
-    $this->subscriptions  = new SubscriptionsController($vindi_settings);
+    $this->subscriptions  = new SubscriptionsController($vindi_settings, $this->customers);
   }
 
 

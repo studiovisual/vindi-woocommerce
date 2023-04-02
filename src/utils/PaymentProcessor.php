@@ -271,10 +271,10 @@ class VindiPaymentProcessor
         foreach ($order_items as $order_item) {
             $product = $order_item->get_product();
             
-            if ($this->is_subscription_type($product)) {
+            if (VindiHelpers::is_subscription_type($product)) {
                 $product_id = $product->id;
 
-                if ($this->is_variable($product)) {
+                if (VindiHelpers::is_variable($product)) {
                     $product_id = $order_item['variation_id'];
                 }
 
@@ -451,7 +451,7 @@ class VindiPaymentProcessor
             }
             return $this->single_freight ? 1 : null;
 
-        } elseif (!$this->is_subscription_type($product)) {
+        } elseif (!VindiHelpers::is_subscription_type($product)) {
             return 1;
         }
 
@@ -551,7 +551,7 @@ class VindiPaymentProcessor
         $order_items['type'] = 'product';
         $product_id = $product->id;
 
-        if ($this->is_variable($product)) {
+        if (VindiHelpers::is_variable($product)) {
             $product_id = $order_items['variation_id'];
         }
 
@@ -668,7 +668,7 @@ class VindiPaymentProcessor
 
             $one_time_shipping = $this->is_one_time_shipping($product) && $this->single_freight ? true : false;
 
-            if ($this->is_subscription_type($product) && !$one_time_shipping) {
+            if (VindiHelpers::is_subscription_type($product) && !$one_time_shipping) {
                 $shipping_method = $wc_subscription->get_shipping_method();
                 $get_total_shipping = $wc_subscription->get_total_shipping();
             }
@@ -970,7 +970,7 @@ class VindiPaymentProcessor
             $vindi_plan = get_post_meta($product->get_id(), 'vindi_plan_id', true);
         }
 
-        if ($this->is_subscription_type($product) and !empty($vindi_plan)) {
+        if (VindiHelpers::is_subscription_type($product) and !empty($vindi_plan)) {
             return $vindi_plan;
         }
 
@@ -999,7 +999,7 @@ class VindiPaymentProcessor
 
         $product = $order_item->get_product();
 
-        if ($this->is_subscription_type($product) || $this->is_variable($product)) {
+        if (VindiHelpers::is_subscription_type($product) || VindiHelpers::is_variable($product)) {
             $vindi_plan = $this->get_plan_from_order_item($order_item);
             $data['plan_id'] = $vindi_plan;
             $wc_subscription_id = VindiHelpers::get_matching_subscription($this->order, $order_item)->id;
@@ -1211,7 +1211,7 @@ class VindiPaymentProcessor
 
         if (!$vindi_product_id) {
             $vindi_product = 63;
-            if (!$this->is_subscription_type($product)) {
+            if (!VindiHelpers::is_subscription_type($product)) {
                 $vindi_product = $this->controllers->products->create($product_id, '', '', true);
             } else {
                 $vindi_product = $this->controllers->plans->create($product_id, '', '', true);
@@ -1261,28 +1261,6 @@ class VindiPaymentProcessor
     }
 
     /**
-     * Check if the product is variable
-     *
-     * @param WC_Product $product
-     * @return bool
-     */
-    protected function is_variable(WC_Product $product)
-    {
-        return (boolean) preg_match('/variation/', $product->get_type());
-    }
-
-    /**
-     * Check if the product is a subscription
-     *
-     * @param WC_Product $product
-     * @return bool
-     */
-    protected function is_subscription_type(WC_Product $product)
-    {
-        return (boolean) preg_match('/subscription/', $product->get_type());
-    }
-
-    /**
      * Check if the subscription has a trial period
      *
      * @param WC_Product $product
@@ -1290,7 +1268,7 @@ class VindiPaymentProcessor
      */
     protected function subscription_has_trial(WC_Product $product)
     {
-        return $this->is_subscription_type($product) && class_exists('WC_Subscriptions_Product') && WC_Subscriptions_Product::get_trial_length($product->get_id()) > 0;
+        return VindiHelpers::is_subscription_type($product) && class_exists('WC_Subscriptions_Product') && WC_Subscriptions_Product::get_trial_length($product->get_id()) > 0;
     }
 
     /**
