@@ -213,6 +213,50 @@ class VindiHelpers
   
       return $new_array;
   }
+
+  /**
+   * Check if the product is a subscription
+   *
+   * @param WC_Product $product
+   * @return bool
+   */
+  public static function is_subscription_type(WC_Product $product): bool {
+    return (boolean) preg_match('/subscription/', $product->get_type());
+  }
+
+  /**
+   * Check if the product is variable
+   *
+   * @param WC_Product $product
+   * @return bool
+   */
+  public static function is_variable(WC_Product $product): bool {
+    return (boolean) preg_match('/variation/', $product->get_type());
+  }
+
+  /**
+   * Retrieve Plan for Vindi Subscription.
+   *
+   * @param WC_Order_Item_Product $order_item
+   *
+   * @return int|bool
+   */
+  public static function get_plan_from_order_item($order_item) {
+    $product = $order_item->get_product();
+
+    if(isset($order_item['variation_id']) && $order_item['variation_id'] != 0) {
+        $vindi_plan = get_post_meta($order_item['variation_id'], 'vindi_plan_id', true);
+
+        if(empty($vindi_plan) || !is_numeric($vindi_plan) || is_null($vindi_plan) || $vindi_plan == 0)
+            $vindi_plan = get_post_meta($product->get_id(), 'vindi_plan_id', true);
+    } 
+    else
+        $vindi_plan = get_post_meta($product->get_id(), 'vindi_plan_id', true);
+
+    if(VindiHelpers::is_subscription_type($product) and !empty($vindi_plan))
+        return $vindi_plan;
+
+    throw new Exception(__('O produto selecionado não é uma assinatura.', VINDI));
+  }
+
 }
-
-
