@@ -11,11 +11,6 @@
 class SubscriptionsController {
 
   /**
-   * @var array
-   */
-  private $allowed_types;
-
-  /**
    * @var VindiRoutes
    */
   private $routes;
@@ -34,11 +29,8 @@ class SubscriptionsController {
     $this->vindi_settings       = $vindi_settings;
     $this->routes               = $vindi_settings->routes;
     $this->customers_controller = $customers_controller;
-    $this->allowed_types        = array('variable-subscription', 'subscription');
 
     add_action('wp_insert_post', array($this, 'create'), 10, 3);
-    // add_action('wp_trash_post',  array($this, 'trash'), 10, 1);
-    // add_action('untrash_post',   array($this, 'untrash'), 10, 1);
   }
 
   /**
@@ -61,10 +53,6 @@ class SubscriptionsController {
 
     if(empty(apply_filters('vindi_subscription_created', true, $post_id)))
       return;
-
-    if($this->check_subscription_vindi_item_id($post_id, 'vindi_subscription_id') > 1)
-        update_post_meta($post_id, 'vindi_subscription_id', '');
-
     // Check if it's a new post
     // The $update value is unreliable because of the auto_draft functionality
     if(!empty(get_post_meta($post_id, 'vindi_subscription_id', true))) 
@@ -89,15 +77,22 @@ class SubscriptionsController {
       return;
   
     $data['customer_id']         = $customer['id'];
-    $data['payment_method_code'] = 'credit_card';
+    $data['payment_method_code'] = 'bank_slip';
 
     if(VindiHelpers::is_subscription_type($product) || VindiHelpers::is_variable($product)) {
-        $vindi_plan = VindiHelpers::get_plan_from_order_item($item);
-        $data['plan_id'] = $vindi_plan;
-        $data['code']    = 'WC-' . $post_id;
+      $vindi_plan = VindiHelpers::get_plan_from_order_item($item);
+
+      if(empty($vindi_plan))
+        return;
+
+      $data['plan_id'] = $vindi_plan;
+      $data['code']    = 'WC-' . $post_id;
     }
 
     $subscriptionData = $this->routes->createSubscription($data);
+
+    if(isset($subscriptionData['id']))
+      update_post_meta($post_id, 'vindi_subscription_id', $subscriptionData['id']);
 
     if(isset($subscriptionData['bill']['id'])) {
       $order = $subscription->get_parent();
@@ -110,252 +105,24 @@ class SubscriptionsController {
         
       update_post_meta($order->get_id(), 'vindi_bill_id', $subscriptionData['bill']['id']);
     }
-  }
 
-  function update($post_id) {
-    $product = wc_get_product($post_id);
-
-    // Check if the post is of the signature type
-    if(!in_array($product->get_type(), $this->allowed_types))
-      return;
-
-    // Checks whether there is a vindi plan ID created within
-    if($product->get_type() == 'subscription') {
-      $vindi_plan_id = get_post_meta($post_id, 'vindi_plan_id', true);
-
-      if(empty($vindi_plan_id))
-        return $this->create($post_id, '', '', true);
-    }
-
-    // Checks if the plan is a variation and creates it
-    if($product->get_type() == 'variable-subscription') {
-      $variations = $product->get_available_variations();
-      $variations_products = $variations_plans = [];
-
-      foreach ($variations as $variation) {
-        $variation_product = wc_get_product($variation['variation_id']);
-
-        // Checks whether there is a vindi plan ID created within
-        $vindi_plan_id    = get_post_meta($variation['variation_id'], 'vindi_plan_id', true);
-        $vindi_product_id = get_post_meta($variation['variation_id'], 'vindi_product_id', true);
-
-        if(empty($vindi_plan_id))
-          return $this->create($post_id, '', '', true);
-
-        $data = $variation_product->get_data();
-
-        $interval_type  = $variation_product->get_meta('_subscription_period');
-        $interval_count = $variation_product->get_meta('_subscription_period_interval');
-        $plan_interval  = VindiConversions::convert_interval($interval_count, $interval_type);
-
-        $trigger_day = VindiConversions::convertTriggerToDay(
-          $product->get_meta('_subscription_trial_length'),
-          $product->get_meta('_subscription_trial_period')
-        );
-
-        // Updates the product within the Vindi
-        $updatedProduct = $this->routes->updateProduct(
-          $vindi_product_id,
-          array(
-            'name'           => VINDI_PREFIX_PRODUCT . $data['name'],
-            'code'           => 'WC-' . $data['id'],
-            'status'         => ($data['status'] == 'publish') ? 'active' : 'inactive',
-            'invoice'        => 'always',
-            'pricing_schema' => array(
-              'price'       => ($data['price']) ? $data['price'] : 0,
-              'schema_type' => 'flat',
-            )
-          )
-        );
-
-        // Updates the plan within the Vindi
-        $updatedPlan = $this->routes->updatePlan(
-          $vindi_plan_id,
-          array(
-            'name'                 => VINDI_PREFIX_PLAN . $data['name'],
-            'interval'             => $plan_interval['interval'],
-            'interval_count'       => $plan_interval['interval_count'],
-            'billing_trigger_type' => 'beginning_of_period',
-            'billing_trigger_day'  => $trigger_day,
-            'billing_cycles'       => ($product->get_meta('_subscription_length') == 0) ? null : $product->get_meta('_subscription_length'),
-            'code'                 => 'WC-' . $data['id'],
-            'installments'         => 1,
-            'status'               => ($data['status'] == 'publish') ? 'active' : 'inactive',
-          )
-        );
-
-        $variations_products[$variation['variation_id']] = $updatedProduct;
-        $variations_plans[$variation['variation_id']]    = $updatedPlan;
-
-        // Saving product id and plan in the WC goal
-        update_post_meta($variation['variation_id'], 'vindi_product_id', $updatedProduct['id']);
-        update_post_meta($variation['variation_id'], 'vindi_plan_id', $updatedPlan['id']);
-      }
-
-      update_post_meta($post_id, 'vindi_product_id', end($variations_products)['id']);
-      update_post_meta($post_id, 'vindi_plan_id', end($variations_products)['id']);
-
-      return array(
-        'product' => $variations_products,
-        'plan'    => $variations_plans,
-      );
-    }
-
-    $data = $product->get_data();
-
-    $interval_type  = $product->get_meta('_subscription_period');
-    $interval_count = $product->get_meta('_subscription_period_interval');
-    $plan_interval  = VindiConversions::convert_interval($interval_count, $interval_type);
-
-    $trigger_day = VindiConversions::convertTriggerToDay(
-      $product->get_meta('_subscription_trial_length'),
-      $product->get_meta('_subscription_trial_period')
-    );
-
-    $vindi_product_id = get_post_meta($post_id, 'vindi_product_id', true);
-
-    // Updates the product within the Vindi
-    $updatedProduct = $this->routes->updateProduct(
-      $vindi_product_id,
-      array(
-        'name'           => VINDI_PREFIX_PRODUCT . $data['name'],
-        'code'           => 'WC-' . $data['id'],
-        'status'         => ($data['status'] == 'publish') ? 'active' : 'inactive',
-        'invoice'        => 'always',
-        'pricing_schema' => array(
-          'price'       => ($data['price']) ? $data['price'] : 0,
-          'schema_type' => 'flat',
-        )
-      )
-    );
-
-    $vindi_plan_id = get_post_meta($post_id, 'vindi_plan_id', true);
-
-    // Updates the plan within the Vindi
-    $updatedPlan = $this->routes->updatePlan(
-      $vindi_plan_id,
-      array(
-        'name'                 => VINDI_PREFIX_PLAN . $data['name'],
-        'interval'             => $plan_interval['interval'],
-        'interval_count'       => $plan_interval['interval_count'],
-        'billing_trigger_type' => 'beginning_of_period',
-        'billing_trigger_day'  => $trigger_day,
-        'billing_cycles'       => ($product->get_meta('_subscription_length') == 0) ? null : $product->get_meta('_subscription_length'),
-        'code'                 => 'WC-' . $data['id'],
-        'installments'         => 1,
-        'status'               => ($data['status'] == 'publish') ? 'active' : 'inactive',
-      )
-    );
-
-    if($updatedPlan && $updatedProduct)
-      set_transient('vindi_product_message', 'updated', 60);
-    else
-      set_transient('vindi_product_message', 'error', 60);
-    
-    return array(
-      'product' => $updatedProduct,
-      'plan'    => $updatedPlan,
-    );
+    if(isset($subscriptionData['next_billing_at']))
+      update_post_meta($post_id, '_schedule_next_payment', date('Y-m-d H:i:s', strtotime($subscriptionData['next_billing_at'])));
   }
 
   /**
    * When the user trashes a product in Woocomerce, it is deactivated in the Vindi.
    *
-   * @since 1.0.1
-   * @version 1.0.1
+   * @since 1.2.0
+   * @version 1.2.0
    */
-  function trash($post_id) {
-    // Check if the post is product
-    if(get_post_type($post_id) != 'product')
+  function update($post_id) {
+    if(get_post_status($post_id) != 'wc-cancelled')
       return;
 
-    $product = wc_get_product($post_id);
+    $subscription_id = get_post_meta($post_id, 'vindi_subscription_id');
 
-    // Check if the post is of the signature type
-    if(!in_array($product->get_type(), $this->allowed_types))
-      return;
-
-    $vindi_product_id = get_post_meta($product->get_id(), 'vindi_product_id', true);
-    $vindi_plan_id    = get_post_meta($product->get_id(), 'vindi_plan_id', true);
-
-    if(empty($vindi_product_id) || empty($vindi_plan_id))
-      return;
-
-    // Changes the product status within the Vindi
-    $inactivatedProduct = $this->routes->updateProduct($vindi_product_id, array('status' => 'inactive'));
-
-    // Changes the plan status within the Vindi
-    $inactivatedPlan = $this->routes->updatePlan($vindi_plan_id, array('status' => 'inactive'));
-
-    return array(
-      'product' => $inactivatedProduct,
-      'plan'    => $inactivatedPlan,
-    );
-  }
-
-  /**
-   * When the user untrashes a product in Woocomerce, it is activated in the Vindi.
-   *
-   * @since 1.0.01
-   * @version 1.0.0
-   */
-  function untrash($post_id) {
-    // Check if the post is product
-    if(get_post_type($post_id) != 'product')
-      return;
-
-    $product = wc_get_product($post_id);
-
-    // Check if the post is of the signature type
-    if(!in_array($product->get_type(), $this->allowed_types))
-      return;
-
-    $vindi_product_id = get_post_meta($product->get_id(), 'vindi_product_id', true);
-    $vindi_plan_id    = get_post_meta($product->get_id(), 'vindi_plan_id', true);
-
-    if(empty($vindi_product_id) || empty($vindi_plan_id))
-      return;
-
-    // Changes the product status within the Vindi
-    $activatedProduct = $this->routes->updateProduct($vindi_product_id, array('status' => 'active'));
-
-    // Changes the plan status within the Vindi
-    $activatedPlan = $this->routes->updatePlan($vindi_plan_id, array('status' => 'active'));
-
-    return array(
-      'product' => $activatedProduct,
-      'plan'    => $activatedPlan,
-    );
-  }
-
-  /**
-   * Check if exists a duplicate $meta on database
-   * @param int $post_id
-   * @param string $meta
-   * @return int $post_id
-   */
-  public function check_subscription_vindi_item_id($post_id, $meta) {
-      $vindi_id = get_post_meta($post_id, $meta, true);
-
-      if(empty($vindi_id))
-        return 0;
-
-      global $wpdb;
-
-      $sql = "SELECT 
-                post_id as id 
-              FROM {$wpdb->prefix}postmeta
-              WHERE 
-                meta_key LIKE '$meta' AND
-                meta_value LIKE $vindi_id
-              ";
-
-      $result = $wpdb->get_results($sql);
-
-      if(is_array($result) && !empty($result))
-          return count($result);
-
-      return 0;
+    $this->routes->suspendSubscription($subscription_id);
   }
 
 }
