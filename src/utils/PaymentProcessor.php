@@ -88,19 +88,11 @@ class VindiPaymentProcessor
      *
      * @return array Vindi customer array
      */
-    public function get_customer()
-    {
+    public function get_customer() {
         $current_user = $this->order->get_user();
         
-        if ($current_user->ID) {
+        if($current_user->ID)
             $vindi_customer = $this->controllers->customers->update($current_user->ID, $this->order);
-        }
-
-        if ($this->is_cc()) {
-            $this->create_payment_profile($vindi_customer['id']);
-        } else {
-            // $this->create_payment_profile_bank_slip($vindi_customer['id']);
-        }
 
         return $vindi_customer;
     }
@@ -258,8 +250,12 @@ class VindiPaymentProcessor
     {
         $this->check_trial_and_single_product();
         $customer = $this->get_customer();
+        $gateway_token = '';
+
+        if(isset($customer['id']))
+            $gateway_token = $this->create_payment_profile($customer['id']);
+
         $order_items = $this->order->get_items();
-        
         $bills = [];
         $order_post_meta = [];
         $bill_products = [];
@@ -271,10 +267,10 @@ class VindiPaymentProcessor
         foreach ($order_items as $order_item) {
             $product = $order_item->get_product();
             
-            if ($this->is_subscription_type($product)) {
+            if (VindiHelpers::is_subscription_type($product)) {
                 $product_id = $product->id;
 
-                if ($this->is_variable($product)) {
+                if (VindiHelpers::is_variable($product)) {
                     $product_id = $order_item['variation_id'];
                 }
 
@@ -294,7 +290,7 @@ class VindiPaymentProcessor
                 continue;
 
             try {
-                $subscription = $this->create_subscription($customer['id'], $subscription_order_item);
+                $subscription = $this->create_subscription($customer['id'], $subscription_order_item, $gateway_token);
                 $subscription_id = $subscription['id'];
                 $wc_subscription_id = $subscription['wc_id'];
 
@@ -379,26 +375,16 @@ class VindiPaymentProcessor
      *
      * @throws Exception
      */
-    protected function create_payment_profile($customer_id)
-    {
-
+    protected function create_payment_profile($customer_id) {
         $cc_info = $this->get_cc_payment_type($customer_id);
 
-        if (false === $cc_info) {
+        if(false === $cc_info)
             return;
-        }
 
         $payment_profile = $this->routes->createCustomerPaymentProfile($cc_info);
 
         if(empty($payment_profile) || isset($payment_profile['errors'])) {
             $message = __('Falha ao registrar o método de pagamento. Verifique os dados e tente novamente.', VINDI);
-
-            // if(isset($payment_profile['errors'])) {
-            //     $message .= '<br />';
-
-            //     foreach($payment_profile['errors'] as $error)
-            //         $message .= '<br />' . $error['parameter'] . ' ' . $error['message'];
-            // }
 
             $this->abort(
                 $message,
@@ -406,10 +392,10 @@ class VindiPaymentProcessor
             );
         }
 
-        if ($this->gateway->verify_method()) {
+        if($this->gateway->verify_method())
             $this->verify_payment_profile($payment_profile['id']);
-        }
 
+        return $payment_profile['gateway_token'];
     }
 
     /**
@@ -419,13 +405,9 @@ class VindiPaymentProcessor
      *
      * @throws Exception
      */
-    protected function verify_payment_profile($payment_profile_id)
-    {
-
-        if (!$this->routes->verifyCustomerPaymentProfile($payment_profile_id)) {
+    protected function verify_payment_profile($payment_profile_id) {
+        if(!$this->routes->verifyCustomerPaymentProfile($payment_profile_id))
             $this->abort(__('Não foi possível realizar a verificação do seu cartão de crédito!', VINDI), true);
-        }
-
     }
 
     /**
@@ -451,7 +433,7 @@ class VindiPaymentProcessor
             }
             return $this->single_freight ? 1 : null;
 
-        } elseif (!$this->is_subscription_type($product)) {
+        } elseif (!VindiHelpers::is_subscription_type($product)) {
             return 1;
         }
 
@@ -551,7 +533,7 @@ class VindiPaymentProcessor
         $order_items['type'] = 'product';
         $product_id = $product->id;
 
-        if ($this->is_variable($product)) {
+        if (VindiHelpers::is_variable($product)) {
             $product_id = $order_items['variation_id'];
         }
 
@@ -668,7 +650,7 @@ class VindiPaymentProcessor
 
             $one_time_shipping = $this->is_one_time_shipping($product) && $this->single_freight ? true : false;
 
-            if ($this->is_subscription_type($product) && !$one_time_shipping) {
+            if (VindiHelpers::is_subscription_type($product) && !$one_time_shipping) {
                 $shipping_method = $wc_subscription->get_shipping_method();
                 $get_total_shipping = $wc_subscription->get_total_shipping();
             }
@@ -970,7 +952,7 @@ class VindiPaymentProcessor
             $vindi_plan = get_post_meta($product->get_id(), 'vindi_plan_id', true);
         }
 
-        if ($this->is_subscription_type($product) and !empty($vindi_plan)) {
+        if (VindiHelpers::is_subscription_type($product) and !empty($vindi_plan)) {
             return $vindi_plan;
         }
 
@@ -981,25 +963,27 @@ class VindiPaymentProcessor
      * Create a subscription within Vindi
      *
      * @param int $customer_id ID of the customer that placed the order
-     * @param WC_Order_item_product $order_item Item to add to the subscription.
+     * @param WC_Order_item_product $order_item Item to add to the subscription
+     * @param string $gateway_token The token to add to the subscription
      *
      * @return array
      * @throws Exception
      */
-    protected function create_subscription($customer_id, $order_item)
-    {
-        if($order_item == null || empty($order_item)) {
+    protected function create_subscription($customer_id, $order_item, $gateway_token = '') {
+        if($order_item == null || empty($order_item))
             return;
-        }
 
         $data['customer_id'] = $customer_id;
         $data['payment_method_code'] = $this->payment_method_code();
         $data['installments'] = $this->installments();
         $data['product_items'] = array();
 
+        if(!empty($gateway_token))
+            $data['payment_profile']['gateway_token'] = $gateway_token;
+
         $product = $order_item->get_product();
 
-        if ($this->is_subscription_type($product) || $this->is_variable($product)) {
+        if(VindiHelpers::is_subscription_type($product) || VindiHelpers::is_variable($product)) {
             $vindi_plan = $this->get_plan_from_order_item($order_item);
             $data['plan_id'] = $vindi_plan;
             $wc_subscription_id = VindiHelpers::get_matching_subscription($this->order, $order_item)->id;
@@ -1010,15 +994,15 @@ class VindiPaymentProcessor
 
         $subscription = $this->routes->createSubscription($data);
 
-        if (!isset($subscription['id']) || empty($subscription['id'])) {
+        if(!isset($subscription['id']) || empty($subscription['id'])) {
             $message = sprintf(__('Pagamento Falhou. (%s)', VINDI), $this->vindi_settings->api->last_error);
             throw new Exception($message);
         }
 
         $subscription['wc_id'] = $wc_subscription_id;
-        if (isset($subscription['bill']['id'])) {
+
+        if(isset($subscription['bill']['id']))
             update_post_meta($this->order->id, 'vindi_bill_id', $subscription['bill']['id']);
-        }
 
         return $subscription;
     }
@@ -1211,7 +1195,7 @@ class VindiPaymentProcessor
 
         if (!$vindi_product_id) {
             $vindi_product = 63;
-            if (!$this->is_subscription_type($product)) {
+            if (!VindiHelpers::is_subscription_type($product)) {
                 $vindi_product = $this->controllers->products->create($product_id, '', '', true);
             } else {
                 $vindi_product = $this->controllers->plans->create($product_id, '', '', true);
@@ -1261,28 +1245,6 @@ class VindiPaymentProcessor
     }
 
     /**
-     * Check if the product is variable
-     *
-     * @param WC_Product $product
-     * @return bool
-     */
-    protected function is_variable(WC_Product $product)
-    {
-        return (boolean) preg_match('/variation/', $product->get_type());
-    }
-
-    /**
-     * Check if the product is a subscription
-     *
-     * @param WC_Product $product
-     * @return bool
-     */
-    protected function is_subscription_type(WC_Product $product)
-    {
-        return (boolean) preg_match('/subscription/', $product->get_type());
-    }
-
-    /**
      * Check if the subscription has a trial period
      *
      * @param WC_Product $product
@@ -1290,7 +1252,7 @@ class VindiPaymentProcessor
      */
     protected function subscription_has_trial(WC_Product $product)
     {
-        return $this->is_subscription_type($product) && class_exists('WC_Subscriptions_Product') && WC_Subscriptions_Product::get_trial_length($product->get_id()) > 0;
+        return VindiHelpers::is_subscription_type($product) && class_exists('WC_Subscriptions_Product') && WC_Subscriptions_Product::get_trial_length($product->get_id()) > 0;
     }
 
     /**
