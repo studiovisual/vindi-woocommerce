@@ -98,30 +98,6 @@ class VindiPaymentProcessor
     }
 
     /**
-     *  Create payment profile for customer using bank slip
-     *
-     * @param $customer_id Vindi customer id
-     *
-     * @throws Exception
-     *
-     */
-    public function create_payment_profile_bank_slip($customer_id)
-    {
-        if ($this->is_bank_slip()) {
-            $payment_info = $this->get_bank_slip_payment_type($customer_id);
-            $payment_profile = $this->routes->createCustomerPaymentProfile($payment_info);
-
-            if (!$payment_profile) {
-                $this->abort(__('Falha ao registrar o método de pagamento. Verifique os dados e tente novamente.', VINDI), true);
-            }
-
-            if ($this->gateway->verify_method()) {
-                $this->verify_payment_profile($payment_profile['id']);
-            }
-        }
-    }
-
-    /**
      * Build the credit card payment type.
      *
      * @param int $customer_id Vindi customer id
@@ -251,8 +227,8 @@ class VindiPaymentProcessor
         $this->check_trial_and_single_product();
         $customer = $this->get_customer();
         $gateway_token = '';
-
-        if(isset($customer['id']))
+ 
+        if(isset($customer['id']) && $this->is_cc())
             $gateway_token = $this->create_payment_profile($customer['id']);
 
         $order_items = $this->order->get_items();
