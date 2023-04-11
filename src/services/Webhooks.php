@@ -59,7 +59,7 @@ class VindiWebhooks
 
   /**
    * Read json entity received and proccess the right event
-   * @param string $body
+   * @param mixed $body
    */
   private function process_event($body)
   {
@@ -107,7 +107,7 @@ class VindiWebhooks
     $order_id = $subscription->get_last_order();
     $order = $this->find_order_by_id($order_id);
     $subscription_id = $renew_infos['vindi_subscription_id'];
-    $order_post_meta = array(get_post_meta($order->id, 'vindi_order', true));
+    $order_post_meta = array(get_post_meta($order->get_id(), 'vindi_order', true));
     $order_post_meta[$subscription_id]['cycle'] = $renew_infos['cycle'];
     $order_post_meta[$subscription_id]['product'] = $renew_infos['plan_name'];
     $order_post_meta[$subscription_id]['bill'] = array(
@@ -115,8 +115,8 @@ class VindiWebhooks
       'status' => $renew_infos['bill_status'],
       'bank_slip_url' => $renew_infos['bill_print_url'],
     );
-    update_post_meta($order->id, 'vindi_order', $order_post_meta);
-    $this->vindi_settings->logger->log('Novo Período criado: Pedido #'.$order->id);
+    update_post_meta($order->get_id(), 'vindi_order', $order_post_meta);
+    $this->vindi_settings->logger->log('Novo Período criado: Pedido #'.$order->get_id());
 
     // We've already processed the renewal
     remove_action( 'woocommerce_scheduled_subscription_payment', 'WC_Subscriptions_Manager::prepare_renewal' );
@@ -160,7 +160,7 @@ class VindiWebhooks
     if(empty($data->bill->subscription)) {
       $order = $this->find_order_by_id($data->bill->code);
 
-      $vindi_order = get_post_meta($order->id, 'vindi_order', true);
+      $vindi_order = get_post_meta($order->get_id(), 'vindi_order', true);
       if(is_array($vindi_order)) {
         $vindi_order['single_payment']['bill']['status'] = $data->bill->status;
       } else {
@@ -171,14 +171,14 @@ class VindiWebhooks
       $cycle = $data->bill->period->cycle;
       $order = $this->find_order_by_subscription_and_cycle($vindi_subscription_id, $cycle);
 
-      $vindi_order = get_post_meta($order->id, 'vindi_order', true);
+      $vindi_order = get_post_meta($order->get_id(), 'vindi_order', true);
       if(is_array($vindi_order)) {
         $vindi_order[$vindi_subscription_id]['bill']['status'] = $data->bill->status;
       } else {
         return;
       }
     }
-    update_post_meta($order->id, 'vindi_order', $vindi_order);
+    update_post_meta($order->get_id(), 'vindi_order', $vindi_order);
 
     // Order informations always be updated in last array element
     $vindi_order_info = end($vindi_order);
@@ -233,7 +233,7 @@ class VindiWebhooks
 
     $order->add_order_note(sprintf(
       __('Divergencia de valores do Pedido #%s: Valor Esperado R$ %s, Valor Pago R$ %s.', VINDI),
-      $order->id,
+      $order->get_id(),
       $issue_data->expected_amount,
       $issue_data->transaction_amount
     ));
@@ -412,7 +412,7 @@ class VindiWebhooks
     ));
 
     if(false === $query->have_posts())
-      throw new Exception(sprintf(__('Pedido da assinatura #%s para o ciclo #%s não encontrado!', VINDI), $subscriptionn_id, $cycle), 2);
+      throw new Exception(sprintf(__('Pedido da assinatura #%s para o ciclo #%s não encontrado!', VINDI), $subscription_id, $cycle), 2);
 
     return wc_get_order($query->post->ID);
 	}
