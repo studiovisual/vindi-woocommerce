@@ -155,36 +155,37 @@ class VindiWebhooks
    * Process bill_paid event from webhook
    * @param $data array
    */
-  private function bill_paid($data)
-  {
+  private function bill_paid($data) {
     if(empty($data->bill->subscription)) {
-      $order = $this->find_order_by_id($data->bill->code);
-
+      $order       = $this->find_order_by_id($data->bill->code);
       $vindi_order = get_post_meta($order->get_id(), 'vindi_order', true);
-      if(is_array($vindi_order)) {
+
+      if(is_array($vindi_order))
         $vindi_order['single_payment']['bill']['status'] = $data->bill->status;
-      } else {
+      else
         return;
-      }
-    } else {
+    } 
+    else {
       $vindi_subscription_id = $data->bill->subscription->id;
-      $cycle = $data->bill->period->cycle;
-      $order = $this->find_order_by_subscription_and_cycle($vindi_subscription_id, $cycle);
+      $cycle                 = $data->bill->period->cycle;
+      $order                 = $this->find_order_by_subscription_and_cycle($vindi_subscription_id, $cycle);
+      $vindi_order           = get_post_meta($order->get_id(), 'vindi_order', true);
 
-      $vindi_order = get_post_meta($order->get_id(), 'vindi_order', true);
-      if(is_array($vindi_order)) {
+      if(is_array($vindi_order))
         $vindi_order[$vindi_subscription_id]['bill']['status'] = $data->bill->status;
-      } else {
+      else
         return;
-      }
     }
+
     update_post_meta($order->get_id(), 'vindi_order', $vindi_order);
+    $order->set_payment_method($data->bill->charges[0]->payment_method->code == 'credit_card' ? 'vindi-credit-card' : 'vindi-bank-slip');
 
     // Order informations always be updated in last array element
     $vindi_order_info = end($vindi_order);
 
-    if ($vindi_order_info['bill']['status'] == 'paid') {
+    if($vindi_order_info['bill']['status'] == 'paid') {
         $new_status = $this->vindi_settings->get_return_status();
+        
         $order->update_status($new_status, __('O Pagamento foi realizado com sucesso pela Vindi.', VINDI));
         $this->update_next_payment($data);
     }
