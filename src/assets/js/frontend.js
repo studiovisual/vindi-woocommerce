@@ -19,6 +19,10 @@ class vindiCreditCard extends HTMLElement {
     this.payment_company_input = this.querySelector('input[name="vindi_cc_paymentcompany"]');
     this.expiry_month_input    = this.querySelector('input[name="vindi_cc_monthexpiry"]');
     this.expiry_year_input     = this.querySelector('input[name="vindi_cc_yearexpiry"]');
+    this.gateway_token_input   = this.querySelector('input[name="vindi_cc_gateway_token"]');
+
+    this.eventTokenSuccess = new CustomEvent('token_success');
+    this.eventTokenError   = new CustomEvent('token_error');
 
     // SVGICONS
     this.icons = {
@@ -300,6 +304,38 @@ class vindiCreditCard extends HTMLElement {
     
     this.expirationdate.setCustomValidity(isValid ? '' : 'Digite uma data válida');
     this.expirationdate.parentElement.classList.toggle('invalid', !isValid);
+  }
+
+  getGatewayToken() {
+    fetch('https://sandbox-app.vindi.com.br/api/v1/public/payment_profiles', {
+      method:  'POST',
+      headers: {
+        'Authorization': 'Basic ' + btoa('E_qS1in4WKKW0qeswjX0tNuUCQrXMGm_g3FFPE6ZiXA' + ':'),
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body:    JSON.stringify({
+        'holder_name':          this.name.value,
+        'card_expiration':      this.expirationdate.value,
+        'card_number':          this.cardnumber_mask.unmaskedValue,
+        'card_cvv':             this.securitycode.value,
+        'payment_company_code': this.cardnumber_mask.masked.currentMask.card_type,
+        'payment_method_code':  'credit_card',
+      })
+    })
+    .then(response => response.json())
+    .then(response => {
+      console.log(response);
+
+      if(response.payment_profile) {
+        this.gateway_token_input.value = response.payment_profile.gateway_token;
+        this.dispatchEvent(this.eventTokenSuccess);
+      }
+    })
+    .catch(error => {
+      console.log(error);
+
+      this.dispatchEvent(this.eventTokenError);
+    });
   }
 
 }

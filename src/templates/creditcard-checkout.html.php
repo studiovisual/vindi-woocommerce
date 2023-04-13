@@ -195,6 +195,7 @@
       <input name="vindi_cc_paymentcompany" type="hidden">
       <input name="vindi_cc_monthexpiry" type="hidden">
       <input name="vindi_cc_yearexpiry" type="hidden">
+      <input name="vindi_cc_gateway_token" type="hidden">
     </div>
   </div>
 
