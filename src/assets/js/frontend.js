@@ -307,10 +307,10 @@ class vindiCreditCard extends HTMLElement {
   }
 
   getGatewayToken() {
-    fetch('https://sandbox-app.vindi.com.br/api/v1/public/payment_profiles', {
+    fetch(window.vindi_woocommerce.payment_profiles_endpoint, {
       method:  'POST',
       headers: {
-        'Authorization': 'Basic ' + btoa('E_qS1in4WKKW0qeswjX0tNuUCQrXMGm_g3FFPE6ZiXA' + ':'),
+        'Authorization': 'Basic ' + btoa(window.vindi_woocommerce.api_public_key + ':'),
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body:    JSON.stringify({
@@ -324,18 +324,14 @@ class vindiCreditCard extends HTMLElement {
     })
     .then(response => response.json())
     .then(response => {
-      console.log(response);
-
       if(response.payment_profile) {
         this.gateway_token_input.value = response.payment_profile.gateway_token;
         this.dispatchEvent(this.eventTokenSuccess);
       }
+      else
+        this.dispatchEvent(this.eventTokenError)
     })
-    .catch(error => {
-      console.log(error);
-
-      this.dispatchEvent(this.eventTokenError);
-    });
+    .catch(error => this.dispatchEvent(this.eventTokenError));
   }
 
 }

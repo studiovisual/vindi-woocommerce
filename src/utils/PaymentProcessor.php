@@ -229,7 +229,7 @@ class VindiPaymentProcessor
         $gateway_token = '';
  
         if(isset($customer['id']) && $this->is_cc())
-            $gateway_token = $this->create_payment_profile($customer['id']);
+            $gateway_token = sanitize_text_field($_POST['vindi_cc_gateway_token']);
 
         $order_items = $this->order->get_items();
         $bills = [];

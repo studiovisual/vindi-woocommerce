@@ -139,9 +139,15 @@ class VindiSettings extends WC_Settings_API
 
     $this->form_fields = array(
       'api_key'              => array(
-        'title'            => __('Chave da API Vindi', VINDI),
+        'title'            => __('Chave da API privada Vindi', VINDI),
         'type'             => $this->checkKey(),
-        'description'      => __('A Chave da API de sua conta na Vindi. ' . $prospects_url, VINDI),
+        'description'      => __('A Chave da API privada de sua conta na Vindi. ' . $prospects_url, VINDI),
+        'default'          => '',
+      ),
+      'api_key_public'     => array(
+        'title'            => __('Chave da API pública Vindi', VINDI),
+        'type'             => $this->checkKey(),
+        'description'      => __('A Chave da API púplica de sua conta na Vindi. ' . $prospects_url, VINDI),
         'default'          => '',
       ),
       'send_nfe_information' => array(
@@ -226,6 +232,14 @@ class VindiSettings extends WC_Settings_API
   public function get_api_key()
   {
     return $this->settings['api_key'];
+  }
+
+  /**
+   * Get Vindi API public Key
+   * @return string
+   **/
+  public function get_api_key_public() {
+    return $this->settings['api_key_public'];
   }
 
   /**
