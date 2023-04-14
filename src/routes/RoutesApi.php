@@ -363,7 +363,7 @@ class VindiRoutes
 
       $response = $this->api->request('payment_methods', 'GET');
 
-      if (false == $response)
+      if (false == $response || !isset($response['payment_methods']))
         return false;
 
       foreach ($response['payment_methods'] as $method) {

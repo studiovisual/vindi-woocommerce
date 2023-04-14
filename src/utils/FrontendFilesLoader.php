@@ -39,7 +39,7 @@ class FrontendFilesLoader {
       'vindi_woocommerce',
       array(
         'api_public_key'            => $this->vindi_settings->get_api_key_public(),
-        'payment_profiles_endpoint' => 'https://' . ($this->vindi_settings->get_is_active_sandbox() ? 'sandbox-' : '') . 'app.vindi.com.br/api/v1/public/payment_profiles',
+        'payment_profiles_endpoint' => 'https://' . ($this->vindi_settings->get_is_active_sandbox() == 'yes' ? 'sandbox-' : '') . 'app.vindi.com.br/api/v1/public/payment_profiles',
       )
     );
   }
