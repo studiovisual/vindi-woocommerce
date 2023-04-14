@@ -62,7 +62,7 @@ class WC_Vindi_Payment extends AbstractInstance
     $this->settings = new VindiSettings();
     $this->controllers = new VindiControllers($this->settings);
     $this->webhooks = new VindiWebhooks($this->settings);
-    $this->frontend_files_loader = new FrontendFilesLoader();
+    $this->frontend_files_loader = new FrontendFilesLoader($this->settings);
     $this->subscription_status_handler = new VindiSubscriptionStatusHandler($this->settings);
     $this->vindi_status_notifier = new VindiProductStatus($this->settings);
     $this->interest_price_handler = new InterestPriceHandler();
@@ -126,7 +126,6 @@ class WC_Vindi_Payment extends AbstractInstance
   public static function get_instance()
   {
     require_once self::getPath() . '/utils/FrontendFilesLoader.php';
-    new FrontendFilesLoader();
 
     if (VindiDependencies::check()) {
       // If the single instance hasn't been set, set it now.
