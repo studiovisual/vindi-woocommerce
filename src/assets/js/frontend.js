@@ -267,7 +267,7 @@ class vindiCreditCard extends HTMLElement {
 
   // Verifica se o número do cartão não é uma sequência de números repetidos
   validateNumber() {
-    const isValid = !/^(\d)\1+$/.test(this.cardnumber_mask.unmaskedValue) && this.cardnumber_mask.unmaskedValue.length == 16;
+    const isValid = !/^(\d)\1+$/.test(this.cardnumber_mask.unmaskedValue) && this.cardnumber_mask.unmaskedValue.length >= 14;
     
     this.cardnumber.setCustomValidity(isValid ? '' : 'Digite um número válido');
     this.cardnumber.parentElement.classList.toggle('invalid', !isValid);
