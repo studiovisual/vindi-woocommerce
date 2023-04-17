@@ -9,8 +9,7 @@
 
 function VindiRedirectToMyAccount() {
   if (
-      (! is_user_logged_in() && get_option('woocommerce_enable_guest_checkout') == "no") 
-      && (is_checkout()) 
+    (! is_user_logged_in() && (is_checkout()) && get_option('woocommerce_enable_guest_checkout') == "no") 
   ) {
       wp_redirect(get_permalink( wc_get_page_id( 'myaccount' ) ));
       exit;
