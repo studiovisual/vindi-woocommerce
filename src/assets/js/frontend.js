@@ -318,7 +318,7 @@ class vindiCreditCard extends HTMLElement {
         'card_expiration':      this.expirationdate.value,
         'card_number':          this.cardnumber_mask.unmaskedValue,
         'card_cvv':             this.securitycode.value,
-        'payment_company_code': this.cardnumber_mask.masked.currentMask.card_type,
+        'payment_company_code': this.cardnumber_mask.masked.currentMask.cardtype,
         'payment_method_code':  'credit_card',
       })
     })
