@@ -243,9 +243,12 @@ class VindiRoutes
    *
    * @return bool
    */
-  public function isSubscriptionActive($subscription_id)
-  {
+  public function isSubscriptionActive($subscription_id) {
     $subscription_id = filter_var($subscription_id, FILTER_SANITIZE_NUMBER_INT);
+
+    if(empty($subscription_id))
+      return false;
+
     if (isset($this->recentRequest)
       && $this->recentRequest['id'] == $subscription_id) {
       if ($this->recentRequest['status'] != 'canceled')

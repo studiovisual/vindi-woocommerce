@@ -40,7 +40,7 @@ class SubscriptionsController {
    * @version 1.2.0
    */
   function create($post_id, $post, $update, $recreated = false) {
-    if(!is_admin())
+    if(!is_admin() || wp_doing_ajax())
       return;
 
     // Check if the post is a draft
@@ -71,12 +71,19 @@ class SubscriptionsController {
     if(empty($user))
       return;
 
-    $customer     = $this->customers_controller->update($user->ID);
+    $customer = get_user_meta($user->ID, 'vindi_customer_id', true);
+
+    if(empty($customer)) {
+      $customer = $this->customers_controller->update($user->ID);
+
+      if(isset($customer['id']))
+        $customer = $customer['id'];
+    }
 
     if(empty($customer))
       return;
   
-    $data['customer_id']         = $customer['id'];
+    $data['customer_id']         = $customer;
     $data['payment_method_code'] = 'bank_slip';
 
     if(VindiHelpers::is_subscription_type($product) || VindiHelpers::is_variable($product)) {
