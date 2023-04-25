@@ -227,9 +227,9 @@ class VindiCreditGateway extends VindiPaymentGateway
       $order_max_times = floor($order_total / $this->smallest_installment);
       $max_times = empty($order_max_times) ? 1 : $order_max_times;
 
-      return min($this->max_installments, $max_times, $this->get_installments());
+      return min($this->max_installments, $max_times, $this->getInstallments());
     }
-    return $this->get_installments();
+    return $this->getInstallments();
   }
 
 
@@ -257,32 +257,29 @@ class VindiCreditGateway extends VindiPaymentGateway
     return $user_payment_profile;
   }
 
-  protected function get_installments()
-  {
+  protected function getInstallments() {    
     if($this->is_single_order())
       return $this->installments;
 
     $installments = 0;
 
-    foreach($this->vindi_settings->woocommerce->cart->cart_contents as $item) {
-      $plan_id = $item['data']->get_meta('vindi_plan_id');
-      
-      if (!empty($plan_id)) {
-        $plan = $this->routes->getPlan($plan_id);
+    if(!apply_filters('vindi_skip_installments', false)) {
+      foreach($this->vindi_settings->woocommerce->cart->cart_contents as $item) {
+        $plan_id = $item['data']->get_meta('vindi_plan_id');
         
-        if($plan) {
-          if ($installments == 0) {
-            $installments = $plan['installments'];
-          } elseif ($plan['installments'] < $installments) {
-            $installments = $plan['installments'];
+        if (!empty($plan_id)) {
+          $plan = $this->routes->getPlan($plan_id);
+          
+          if($plan) {
+            if($installments == 0)
+              $installments = $plan['installments'];
+            elseif($plan['installments'] < $installments)
+              $installments = $plan['installments'];
           }
         }
       }
     }
     
-    if($installments != 0)
-      return $installments;
-    else
-      return 1;
+    return $installments != 0 ? $installments : 1;
   }
 }
