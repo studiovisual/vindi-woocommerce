@@ -24,8 +24,9 @@ class CustomerController
 
     // Fires immediately after an existing user is updated.
     add_action('woocommerce_customer_save_address', array($this, 'update'), 10, 1);
-    add_action('woocommerce_save_account_details', array($this, 'update'), 10, 1);
-    add_action('delete_user', array($this, 'delete'), 10, 1);
+    add_action('woocommerce_save_account_details',  array($this, 'update'), 10, 1);
+    add_action('profile_update',                    array($this, 'update'));
+    add_action('delete_user',                       array($this, 'delete'), 10, 1);
   }
 
   /**
