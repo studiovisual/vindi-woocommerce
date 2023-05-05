@@ -1,7 +1,6 @@
 <?php
 
-class CustomerController
-{
+class CustomerController {
 
   /**
    * @var VindiSettings
@@ -13,20 +12,19 @@ class CustomerController
    */
   private $routes;
 
-  function __construct(VindiSettings $vindi_settings)
-  {
-
+  function __construct(VindiSettings $vindi_settings) {
     $this->vindi_settings = $vindi_settings;
-    $this->routes = $vindi_settings->routes;
+    $this->routes         = $vindi_settings->routes;
 
     // Fires immediately after a new user is registered.
-    add_action('user_register', array($this, 'create'), 10, 1);
+    add_action('user_register', array($this, 'create'));
 
     // Fires immediately after an existing user is updated.
-    add_action('woocommerce_customer_save_address', array($this, 'update'), 10, 1);
-    add_action('woocommerce_save_account_details',  array($this, 'update'), 10, 1);
-    add_action('profile_update',                    array($this, 'update'));
-    add_action('delete_user',                       array($this, 'delete'), 10, 1);
+    add_action('delete_user',                            array($this, 'delete'));
+    add_action('profile_update',                         array($this, 'update'));
+    add_action('woocommerce_customer_save_address',      array($this, 'update'));
+    add_action('woocommerce_save_account_details',       array($this, 'update'));
+    add_action('woocommerce_checkout_update_user_meta',  array($this, 'update'));
   }
 
   /**
@@ -35,50 +33,46 @@ class CustomerController
    * @since 1.0.0
    * @version 1.0.0
    */
-  function create($user_id, $order = null)
-  {
-
-    $customer = new WC_Customer($user_id);
-
-    $user = $customer->get_data();
-
-    $name = (!$user['first_name']) ? $user['display_name'] : $user['first_name'] . ' ' . $user['last_name'];
-    $notes = null;
+  function create($user_id, $order = null) {
+    $customer    = new WC_Customer($user_id);
+    $user        = $customer->get_data();
+    $name        = (!$user['first_name']) ? $user['display_name'] : $user['first_name'] . ' ' . $user['last_name'];
+    $notes       = null;
     $cpf_or_cnpj = null;
-    $metadata = null;
+    $metadata    = null;
+    $phones      = [];
+    $metadata    = array();
 
-    $phones = [];
-    if ($customer->get_meta('billing_cellphone')) {
+    if($customer->get_meta('billing_cellphone')) {
       $phones[] = array(
         'phone_type' => 'mobile',
-        'number' => preg_replace('/\D+/', '', '55' . $customer->get_meta('billing_cellphone'))
+        'number'     => preg_replace('/\D+/', '', '55' . $customer->get_meta('billing_cellphone'))
       );
     }
-    if ($customer->get_billing_phone()) {
+
+    if($customer->get_billing_phone()) {
       $phones[] = array(
         'phone_type' => 'landline',
-        'number' => preg_replace('/\D+/', '', '55' . $customer->get_billing_phone())
+        'number'     => preg_replace('/\D+/', '', '55' . $customer->get_billing_phone())
       );
     }
 
-    $metadata = array();
-    if ('2' === $customer->get_meta('billing_persontype')) {
+    if('2' === $customer->get_meta('billing_persontype')) {
       // Pessoa jurídica
-      $name = $customer->get_billing_company();
+      $name        = $customer->get_billing_company();
       $cpf_or_cnpj = $customer->get_meta('billing_cnpj');
-      $notes = sprintf('Nome: %s %s', $customer->get_billing_first_name(), $customer->get_billing_last_name());
+      $notes       = sprintf('Nome: %s %s', $customer->get_billing_first_name(), $customer->get_billing_last_name());
 
-      if ($this->vindi_settings->send_nfe_information()) {
+      if($this->vindi_settings->send_nfe_information())
         $metadata['inscricao_estadual'] = $customer->get_meta('billing_ie');
-      }
-    } else {
+    } 
+    else {
       // Pessoa física
       $cpf_or_cnpj = $customer->get_meta('billing_cpf');
-      $notes = '';
+      $notes       = '';
 
-      if ($this->vindi_settings->send_nfe_information()) {
+      if($this->vindi_settings->send_nfe_information())
         $metadata['carteira_de_identidade'] = $customer->get_meta('billing_rg');
-      }
     }
 
     $address = [
@@ -119,9 +113,7 @@ class CustomerController
    * @since 1.0.0
    * @version 1.0.0
    */
-
-  function update($user_id, $order = null)
-  {
+  function update($user_id, $order = null) {
     $vindi_customer_id = get_user_meta($user_id, 'vindi_customer_id', true);
     
     // Check meta Vindi ID
@@ -131,30 +123,32 @@ class CustomerController
     // Check user exists in Vindi
     $vindiUser = $this->routes->findCustomerById($vindi_customer_id);
 
-    if (!$vindiUser) {
+    if(!$vindiUser)
       return $this->create($user_id);
-    }
 
     $customer = new WC_Customer($user_id);
+    $user     = $customer->get_data();
+    $phones   = $vindi_phones = [];
 
-    $user = $customer->get_data();
-    $phones = $vindi_phones = [];
-    foreach ($vindiUser['phones'] as $phone) {
+    foreach($vindiUser['phones'] as $phone)
       $vindi_phones[$phone['phone_type']] = $phone['id'];
-    }
-    if ($customer->get_meta('billing_cellphone')) {
+    
+    if($customer->get_meta('billing_cellphone')) {
       $mobile = array(
         'phone_type' => 'mobile',
-        'number' => preg_replace('/\D+/', '', '55' . $customer->get_meta('billing_cellphone'))
+        'number'     => preg_replace('/\D+/', '', '55' . $customer->get_meta('billing_cellphone'))
       );
-      if ($vindi_phones['mobile']) $mobile['id'] = $vindi_phones['mobile'];
+
+      if($vindi_phones['mobile']) 
+        $mobile['id'] = $vindi_phones['mobile'];
+
       $phones[] = $mobile;
     }
     
-    if ($customer->get_billing_phone()) {
+    if($customer->get_billing_phone()) {
       $landline = array(
         'phone_type' => 'landline',
-        'number' => preg_replace('/\D+/', '', '55' . $customer->get_billing_phone())
+        'number'     => preg_replace('/\D+/', '', '55' . $customer->get_billing_phone())
       );
       
       if (isset($vindi_phones['landline'])) 
@@ -163,17 +157,17 @@ class CustomerController
       $phones[] = $landline;
     }
 
-    $name = (!$user['first_name']) ? $user['display_name'] : $user['first_name'] . ' ' . $user['last_name'];
-    $notes = null;
+    $name        = (!$user['first_name']) ? $user['display_name'] : $user['first_name'] . ' ' . $user['last_name'];
+    $notes       = null;
     $cpf_or_cnpj = null;
-    $metadata = null;    
-    $metadata = array();
+    $metadata    = null;    
+    $metadata    = array();
 
     if('2' === $customer->get_meta('billing_persontype')) {
       // Pessoa jurídica
-      $name = $customer->get_billing_company();
+      $name        = $customer->get_billing_company();
       $cpf_or_cnpj = $customer->get_meta('billing_cnpj');
-      $notes = sprintf('Nome: %s %s', $customer->get_billing_first_name(), $customer->get_billing_last_name());
+      $notes       = sprintf('Nome: %s %s', $customer->get_billing_first_name(), $customer->get_billing_last_name());
 
       if($this->vindi_settings->send_nfe_information())
         $metadata['inscricao_estadual'] = $customer->get_meta('billing_ie');
@@ -228,9 +222,7 @@ class CustomerController
    * @version 1.0.0
    */
 
-  function delete($user_id)
-  {
-
+  function delete($user_id) {
     $vindi_customer_id = get_user_meta($user_id, 'vindi_customer_id', true);
 
     // Check meta Vindi ID
@@ -246,4 +238,5 @@ class CustomerController
     // Delete customer profile
     $this->routes->deleteCustomer($vindi_customer_id);
   }
+
 }
