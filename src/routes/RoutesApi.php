@@ -243,9 +243,12 @@ class VindiRoutes
    *
    * @return bool
    */
-  public function isSubscriptionActive($subscription_id)
-  {
+  public function isSubscriptionActive($subscription_id) {
     $subscription_id = filter_var($subscription_id, FILTER_SANITIZE_NUMBER_INT);
+
+    if(empty($subscription_id))
+      return false;
+
     if (isset($this->recentRequest)
       && $this->recentRequest['id'] == $subscription_id) {
       if ($this->recentRequest['status'] != 'canceled')
@@ -440,16 +443,14 @@ class VindiRoutes
     return $this->current_plan;
   }
 
-  public function getPaymentProfile($user_vindi_id)
-  {
+  public function getPaymentProfile($user_vindi_id) {
     $user_vindi_id = filter_var($user_vindi_id, FILTER_SANITIZE_NUMBER_INT);
-    $customer = $this->findCustomerById($user_vindi_id);
 
-    if (empty($customer))
+    if(empty($user_vindi_id))
       return false;
 
-    $query    = urlencode("customer_id={$customer['id']} status=active type=PaymentProfile::CreditCard");
-    $response = $this->api->request('payment_profiles?query='.$query, 'GET');
+    $query    = urlencode("customer_id={$user_vindi_id} status=active type=PaymentProfile::CreditCard");
+    $response = $this->api->request('payment_profiles?per_page=1&query='.$query, 'GET');
 
     if (end($response['payment_profiles']) !== null)
       return end($response['payment_profiles']);
