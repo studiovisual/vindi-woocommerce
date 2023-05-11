@@ -75,6 +75,7 @@ class vindiCreditCard extends HTMLElement {
 
     this.applyMasks();
     this.addEvents();
+    this.updatedCheckout();
   }
 
   addEvents() {
