@@ -20,6 +20,7 @@ class CustomerController {
     add_action('user_register', array($this, 'create'));
     add_action('user_register', array($this, 'saveExtraFields'), 9);
     add_action('user_new_form', array($this, 'addExtraFields'));
+    add_action('user_profile_update_errors', array($this, 'validateExtraFields'));
 
     // Fires immediately after an existing user is updated.
     add_action('delete_user',    array($this, 'delete'));
@@ -280,6 +281,29 @@ class CustomerController {
       update_user_meta($user_id, 'billing_persontype', 2);
       update_user_meta($user_id, 'billing_cnpj', preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cnpj'])));
     }
+
+    if(!empty($_POST['billing_phone']))
+      update_user_meta($user_id, 'billing_phone', preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone'])));
+  }
+
+  /**
+   * Validate extra fields data
+   * 
+   * @param WP_Error $errors WP_Error object
+   *
+   * @since 1.5.0
+   * @version 1.5.0
+   */
+  function validateExtraFields($errors) {
+    if(empty($_POST['billing_cpf']) && empty($_POST['billing_cnpj']))
+        $errors->add('empty_cpf_cnpj', __('<strong>Erro</strong>: Insira um CPF ou um CNPJ', VINDI));
+    elseif(!empty($_POST['billing_cpf']) && strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cpf']))) != 11)
+      $errors->add('invalid_cpf', __('<strong>Erro</strong>: Insira um CPF válido', VINDI));
+    elseif(!empty($_POST['billing_cnpj']) && strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cnpj']))) != 14)
+      $errors->add('invalid_cnpj', __('<strong>Erro</strong>: Insira um CNPJ válido', VINDI));
+
+    if(!empty($_POST['billing_phone']) && (strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))) < 10 || strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))) > 11))
+      $errors->add('invalid_phone', __('<strong>Erro</strong>: Insira um telefone válido', VINDI));
   }
 
 }
