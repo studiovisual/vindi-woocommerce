@@ -18,13 +18,14 @@ class CustomerController {
 
     // Fires immediately after a new user is registered.
     add_action('user_register', array($this, 'create'));
+    add_action('user_new_form', array($this, 'addExtraFields'));
 
     // Fires immediately after an existing user is updated.
-    add_action('delete_user',                            array($this, 'delete'));
-    add_action('profile_update',                         array($this, 'update'));
-    add_action('woocommerce_customer_save_address',      array($this, 'update'));
-    add_action('woocommerce_save_account_details',       array($this, 'update'));
-    add_action('woocommerce_checkout_update_user_meta',  array($this, 'update'));
+    add_action('delete_user',    array($this, 'delete'));
+    add_action('profile_update', array($this, 'update'));
+    // add_action('woocommerce_customer_save_address',      array($this, 'update'));
+    // add_action('woocommerce_save_account_details',       array($this, 'update'));
+    // add_action('woocommerce_checkout_update_user_meta',  array($this, 'update'));
   }
 
   /**
@@ -34,6 +35,7 @@ class CustomerController {
    * @version 1.0.0
    */
   function create($user_id, $order = null) {
+    die(var_dump($_POST));
     $customer    = new WC_Customer($user_id);
     $user        = $customer->get_data();
     $name        = (!$user['first_name']) ? $user['display_name'] : $user['first_name'] . ' ' . $user['last_name'];
@@ -237,6 +239,28 @@ class CustomerController {
 
     // Delete customer profile
     $this->routes->deleteCustomer($vindi_customer_id);
+  }
+
+  /**
+   * Add extra fields to the user new form
+   *
+   * @since 1.5.0
+   * @version 1.5.0
+   */
+  function addExtraFields() {
+    echo
+      '<table class="form-table" role="presentation">
+          <tbody>
+              <tr class="form-field">
+                  <th scope="row"><label for="billing_cpf">CPF</label></th>
+                  <td><input name="billing_cpf" type="tel" id="billing_cpf" /></td>
+              </tr>
+              <tr class="form-field">
+                  <th scope="row"><label for="billing_cnpj">CNPJ</label></th>
+                  <td><input name="billing_cnpj" type="tel" id="billing_cnpj" /></td>
+              </tr>
+          </tbody>
+      </table>';  
   }
 
 }
