@@ -18,6 +18,7 @@ class CustomerController {
 
     // Fires immediately after a new user is registered.
     add_action('user_register', array($this, 'create'));
+    add_action('user_register', array($this, 'saveExtraFields'), 9);
     add_action('user_new_form', array($this, 'addExtraFields'));
 
     // Fires immediately after an existing user is updated.
@@ -35,7 +36,6 @@ class CustomerController {
    * @version 1.0.0
    */
   function create($user_id, $order = null) {
-    die(var_dump($_POST));
     $customer    = new WC_Customer($user_id);
     $user        = $customer->get_data();
     $name        = (!$user['first_name']) ? $user['display_name'] : $user['first_name'] . ' ' . $user['last_name'];
@@ -253,14 +253,33 @@ class CustomerController {
           <tbody>
               <tr class="form-field">
                   <th scope="row"><label for="billing_cpf">CPF</label></th>
-                  <td><input name="billing_cpf" type="tel" id="billing_cpf" /></td>
+                  <td><input name="billing_cpf" type="tel" id="billing_cpf" value="' . (isset($_POST['billing_cpf']) ? $_POST['billing_cpf'] : '') . '" /></td>
               </tr>
               <tr class="form-field">
                   <th scope="row"><label for="billing_cnpj">CNPJ</label></th>
-                  <td><input name="billing_cnpj" type="tel" id="billing_cnpj" /></td>
+                  <td><input name="billing_cnpj" type="tel" id="billing_cnpj" value="' . (isset($_POST['billing_cnpj']) ? $_POST['billing_cnpj'] : '') . '" /></td>
               </tr>
           </tbody>
       </table>';  
+  }
+
+  /**
+   * Save extra fields data
+   * 
+   * @param int $user_id User ID
+   *
+   * @since 1.5.0
+   * @version 1.5.0
+   */
+  function saveExtraFields($user_id) {
+    if(!empty($_POST['billing_cpf'])) {
+      update_user_meta($user_id, 'billing_persontype', 1);
+      update_user_meta($user_id, 'billing_cpf', preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cpf'])));
+    }
+    elseif(!empty($_POST['billing_cnpj'])) {
+      update_user_meta($user_id, 'billing_persontype', 2);
+      update_user_meta($user_id, 'billing_cnpj', preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cnpj'])));
+    }
   }
 
 }
