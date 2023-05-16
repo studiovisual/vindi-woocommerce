@@ -30,7 +30,8 @@ class SubscriptionsController {
     $this->routes               = $vindi_settings->routes;
     $this->customers_controller = $customers_controller;
 
-    add_action('wp_insert_post', array($this, 'create'), 10, 3);
+    add_action('wp_insert_post',                                   array($this, 'create'), 10, 3);
+    add_action('woocommerce_admin_order_data_after_order_details', array($this, 'addNotice'));
   }
 
   /**
@@ -130,6 +131,18 @@ class SubscriptionsController {
     $subscription_id = get_post_meta($post_id, 'vindi_subscription_id');
 
     $this->routes->suspendSubscription($subscription_id);
+  }
+
+  /**
+   * Add small notice about customers
+   * 
+   *
+   * @since 1.5.0
+   * @version 1.5.0
+   */
+  function addNotice() {
+    echo 
+      '<small style="margin-top: 68px; display: block;">' . __('* Caso o cliente desejado não se encontra na lista, verifique se o mesmo possui um CPF ou CNPJ válido', VINDI) . '</small>';
   }
 
 }

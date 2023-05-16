@@ -25,9 +25,8 @@ class CustomerController {
     // Fires immediately after an existing user is updated.
     add_action('delete_user',    array($this, 'delete'));
     add_action('profile_update', array($this, 'update'));
-    // add_action('woocommerce_customer_save_address',      array($this, 'update'));
-    // add_action('woocommerce_save_account_details',       array($this, 'update'));
-    // add_action('woocommerce_checkout_update_user_meta',  array($this, 'update'));
+
+    add_filter('woocommerce_json_search_found_customers', array($this, 'checkRegistryCode'));
   }
 
   /**
@@ -224,7 +223,6 @@ class CustomerController {
    * @since 1.0.0
    * @version 1.0.0
    */
-
   function delete($user_id) {
     $vindi_customer_id = get_user_meta($user_id, 'vindi_customer_id', true);
 
@@ -304,6 +302,28 @@ class CustomerController {
 
     if(!empty($_POST['billing_phone']) && (strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))) < 10 || strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))) > 11))
       $errors->add('invalid_phone', __('<strong>Erro</strong>: Insira um telefone válido', VINDI));
+  }
+
+  /**
+   * Check if the customer has registry code
+   * 
+   * @param array $found_customers Customers array
+   *
+   * @since 1.5.0
+   * @version 1.5.0
+   */
+  function checkRegistryCode($found_customers) {
+    $found_customers = array_filter($found_customers, function($customer) {
+      $registry_code = get_user_meta($customer, 'billing_cpf', true);
+
+      if(empty($registry_code))
+        $registry_code = get_user_meta($customer, 'billing_cnpj', true);
+
+      return !empty($registry_code);
+    },
+    ARRAY_FILTER_USE_KEY);
+
+    return $found_customers;
   }
 
 }
