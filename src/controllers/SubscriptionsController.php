@@ -142,7 +142,7 @@ class SubscriptionsController {
    */
   function addNotice() {
     echo 
-      '<small style="margin-top: 68px; display: block;">' . __('* Caso o cliente desejado não se encontra na lista, verifique se o mesmo possui um CPF ou CNPJ válido', VINDI) . '</small>';
+      '<small style="margin-top: 68px; display: block;"><span style="color: red; font-weight: bold;">*</span> ' . __('Caso o cliente desejado não se encontra na lista, verifique se o mesmo possui um CPF ou CNPJ válido', VINDI) . '</small>';
   }
 
 }
