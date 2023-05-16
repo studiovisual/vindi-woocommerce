@@ -18,13 +18,15 @@ class CustomerController {
 
     // Fires immediately after a new user is registered.
     add_action('user_register', array($this, 'create'));
+    add_action('user_register', array($this, 'saveExtraFields'), 9);
+    add_action('user_new_form', array($this, 'addExtraFields'));
+    add_action('user_profile_update_errors', array($this, 'validateExtraFields'));
 
     // Fires immediately after an existing user is updated.
-    add_action('delete_user',                            array($this, 'delete'));
-    add_action('profile_update',                         array($this, 'update'));
-    add_action('woocommerce_customer_save_address',      array($this, 'update'));
-    add_action('woocommerce_save_account_details',       array($this, 'update'));
-    add_action('woocommerce_checkout_update_user_meta',  array($this, 'update'));
+    add_action('delete_user',    array($this, 'delete'));
+    add_action('profile_update', array($this, 'update'));
+
+    add_filter('woocommerce_json_search_found_customers', array($this, 'checkRegistryCode'));
   }
 
   /**
@@ -221,7 +223,6 @@ class CustomerController {
    * @since 1.0.0
    * @version 1.0.0
    */
-
   function delete($user_id) {
     $vindi_customer_id = get_user_meta($user_id, 'vindi_customer_id', true);
 
@@ -237,6 +238,92 @@ class CustomerController {
 
     // Delete customer profile
     $this->routes->deleteCustomer($vindi_customer_id);
+  }
+
+  /**
+   * Add extra fields to the user new form
+   *
+   * @since 1.5.0
+   * @version 1.5.0
+   */
+  function addExtraFields() {
+    echo
+      '<table class="form-table" role="presentation">
+          <tbody>
+              <tr class="form-field">
+                  <th scope="row"><label for="billing_cpf">CPF</label></th>
+                  <td><input name="billing_cpf" type="tel" id="billing_cpf" value="' . (isset($_POST['billing_cpf']) ? $_POST['billing_cpf'] : '') . '" /></td>
+              </tr>
+              <tr class="form-field">
+                  <th scope="row"><label for="billing_cnpj">CNPJ</label></th>
+                  <td><input name="billing_cnpj" type="tel" id="billing_cnpj" value="' . (isset($_POST['billing_cnpj']) ? $_POST['billing_cnpj'] : '') . '" /></td>
+              </tr>
+          </tbody>
+      </table>';  
+  }
+
+  /**
+   * Save extra fields data
+   * 
+   * @param int $user_id User ID
+   *
+   * @since 1.5.0
+   * @version 1.5.0
+   */
+  function saveExtraFields($user_id) {
+    if(!empty($_POST['billing_cpf'])) {
+      update_user_meta($user_id, 'billing_persontype', 1);
+      update_user_meta($user_id, 'billing_cpf', preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cpf'])));
+    }
+    elseif(!empty($_POST['billing_cnpj'])) {
+      update_user_meta($user_id, 'billing_persontype', 2);
+      update_user_meta($user_id, 'billing_cnpj', preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cnpj'])));
+    }
+
+    if(!empty($_POST['billing_phone']))
+      update_user_meta($user_id, 'billing_phone', preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone'])));
+  }
+
+  /**
+   * Validate extra fields data
+   * 
+   * @param WP_Error $errors WP_Error object
+   *
+   * @since 1.5.0
+   * @version 1.5.0
+   */
+  function validateExtraFields($errors) {
+    if(empty($_POST['billing_cpf']) && empty($_POST['billing_cnpj']))
+        $errors->add('empty_cpf_cnpj', __('<strong>Erro</strong>: Insira um CPF ou um CNPJ', VINDI));
+    elseif(!empty($_POST['billing_cpf']) && strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cpf']))) != 11)
+      $errors->add('invalid_cpf', __('<strong>Erro</strong>: Insira um CPF válido', VINDI));
+    elseif(!empty($_POST['billing_cnpj']) && strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cnpj']))) != 14)
+      $errors->add('invalid_cnpj', __('<strong>Erro</strong>: Insira um CNPJ válido', VINDI));
+
+    if(!empty($_POST['billing_phone']) && (strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))) < 10 || strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))) > 11))
+      $errors->add('invalid_phone', __('<strong>Erro</strong>: Insira um telefone válido', VINDI));
+  }
+
+  /**
+   * Check if the customer has registry code
+   * 
+   * @param array $found_customers Customers array
+   *
+   * @since 1.5.0
+   * @version 1.5.0
+   */
+  function checkRegistryCode($found_customers) {
+    $found_customers = array_filter($found_customers, function($customer) {
+      $registry_code = get_user_meta($customer, 'billing_cpf', true);
+
+      if(empty($registry_code))
+        $registry_code = get_user_meta($customer, 'billing_cnpj', true);
+
+      return !empty($registry_code);
+    },
+    ARRAY_FILTER_USE_KEY);
+
+    return $found_customers;
   }
 
 }
