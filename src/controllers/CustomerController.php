@@ -295,9 +295,9 @@ class CustomerController {
   function validateExtraFields($errors) {
     if(empty($_POST['billing_cpf']) && empty($_POST['billing_cnpj']))
         $errors->add('empty_cpf_cnpj', __('<strong>Erro</strong>: Insira um CPF ou um CNPJ', VINDI));
-    elseif(!empty($_POST['billing_cpf']) && strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cpf']))) != 11)
+    elseif(!empty($_POST['billing_cpf']) && !VindiValidators::isValidCPF(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cpf']))))
       $errors->add('invalid_cpf', __('<strong>Erro</strong>: Insira um CPF válido', VINDI));
-    elseif(!empty($_POST['billing_cnpj']) && strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cnpj']))) != 14)
+    elseif(!empty($_POST['billing_cnpj']) && !VindiValidators::isValidCNPJ(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cnpj']))))
       $errors->add('invalid_cnpj', __('<strong>Erro</strong>: Insira um CNPJ válido', VINDI));
 
     if(!empty($_POST['billing_phone']) && (strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))) < 10 || strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))) > 11))
