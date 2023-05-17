@@ -258,6 +258,10 @@ class CustomerController {
                   <th scope="row"><label for="billing_cnpj">CNPJ</label></th>
                   <td><input name="billing_cnpj" type="tel" id="billing_cnpj" value="' . (isset($_POST['billing_cnpj']) ? $_POST['billing_cnpj'] : '') . '" /></td>
               </tr>
+              <tr class="form-field">
+                  <th scope="row"><label for="billing_phone">Telefone</label></th>
+                  <td><input name="billing_phone" type="tel" id="billing_phone" value="' . (isset($_POST['billing_phone']) ? $_POST['billing_phone'] : '') . '" /></td>
+              </tr>
           </tbody>
       </table>';  
   }
@@ -295,12 +299,12 @@ class CustomerController {
   function validateExtraFields($errors) {
     if(empty($_POST['billing_cpf']) && empty($_POST['billing_cnpj']))
         $errors->add('empty_cpf_cnpj', __('<strong>Erro</strong>: Insira um CPF ou um CNPJ', VINDI));
-    elseif(!empty($_POST['billing_cpf']) && strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cpf']))) != 11)
+    elseif(!empty($_POST['billing_cpf']) && !VindiValidators::isValidCPF(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cpf']))))
       $errors->add('invalid_cpf', __('<strong>Erro</strong>: Insira um CPF válido', VINDI));
-    elseif(!empty($_POST['billing_cnpj']) && strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cnpj']))) != 14)
+    elseif(!empty($_POST['billing_cnpj']) && !VindiValidators::isValidCNPJ(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_cnpj']))))
       $errors->add('invalid_cnpj', __('<strong>Erro</strong>: Insira um CNPJ válido', VINDI));
 
-    if(!empty($_POST['billing_phone']) && (strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))) < 10 || strlen(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))) > 11))
+    if(!empty($_POST['billing_phone']) && !VindiValidators::isValidPhone(preg_replace('/[^0-9]/', '', wc_clean($_POST['billing_phone']))))
       $errors->add('invalid_phone', __('<strong>Erro</strong>: Insira um telefone válido', VINDI));
   }
 
