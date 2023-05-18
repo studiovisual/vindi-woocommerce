@@ -1016,7 +1016,7 @@ class VindiPaymentProcessor
         $this->order->update_status('cancelled', __($message, VINDI));
         
         if($message)
-            $this->abort(__(sprintf('Erro ao criar o pedido: %s', $message), VINDI), true);
+            $this->abort(__(sprintf('Problema ao processar o pedido: %s', $message), VINDI), true);
     }
 
     /**
