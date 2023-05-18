@@ -1094,7 +1094,7 @@ class VindiPaymentProcessor
 
         if(array_key_exists($transaction_status, $denied_status)) {
             if($this->is_cc() && $last_charge['last_transaction']['gateway_message'] != null)
-                return $denied_status[$transaction_status] . $last_charge['last_transaction']['gateway_message'];
+                return apply_filters('vindi_error_message',  $denied_status[$transaction_status] . '<br />' . $last_charge['last_transaction']['gateway_message'], $last_charge['last_transaction']['gateway_response_code']);
 
             return $denied_status[$transaction_status];
         }
