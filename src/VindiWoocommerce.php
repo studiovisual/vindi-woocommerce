@@ -105,6 +105,7 @@ class WC_Vindi_Payment extends AbstractInstance
     require_once $this->getPath() . '/includes/admin/Settings.php';
     require_once $this->getPath() . '/includes/gateways/CreditPayment.php';
     require_once $this->getPath() . '/includes/gateways/BankSlipPayment.php';
+    require_once $this->getPath() . '/includes/gateways/PixPayment.php';
     require_once $this->getPath() . '/utils/SubscriptionStatusHandler.php';
     require_once $this->getPath() . '/utils/InterestPriceHandler.php';
 
@@ -147,6 +148,7 @@ class WC_Vindi_Payment extends AbstractInstance
   {
     $methods[] = new VindiCreditGateway($this->settings, $this->controllers);
     $methods[] = new VindiBankSlipGateway($this->settings, $this->controllers);
+    $methods[] = new VindiPixGateway($this->settings, $this->controllers);
 
     return $methods;
   }
