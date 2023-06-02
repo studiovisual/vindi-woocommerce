@@ -172,7 +172,7 @@ class VindiPaymentProcessor
      */
     public function payment_method_code()
     {
-        return $this->is_cc() ? 'credit_card' : 'bank_slip';
+        return $this->is_cc() ? 'credit_card' : ($this->is_bank_slip() ? 'bank_slip' : 'pix');
     }
 
     /**
@@ -204,9 +204,7 @@ class VindiPaymentProcessor
      *
      * @throws Exception
      */
-    public function process()
-    {
-
+    public function process() {
         switch ($orderType = $this->get_order_type()) {
             case static::ORDER_TYPE_SINGLE:
             case static::ORDER_TYPE_SUBSCRIPTION:

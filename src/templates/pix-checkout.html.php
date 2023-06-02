@@ -17,12 +17,13 @@
 	<?php do_action('vindi_pix_form_start', $id); ?>
 
 	<div class="vindi-invoice-description">
-		<?php
-			if($is_single_order)
-				_e('Um Boleto Bancário será enviado para o seu endereço de e-mail.', VINDI);
-			else
-				_e('Um boleto bancário será enviado para o seu e-mail de acordo com a sua assinatura. ', VINDI);
-		?>
+		<h3><?php _e('Gere o código para realizar o pagamento', VINDI); ?></h3>
+
+		<ul>
+			<li><?php _e('Gere o código pelo botão abaixo', VINDI); ?></li>
+			<li><?php _e('Acesse seu Internet Banking ou app de pagamentos', VINDI); ?></li>
+			<li><?php _e('Cole o código e realize o pagamento', VINDI); ?></li>
+		</ul>
 	</div>
 
 	<?php do_action('vindi_pix_form_end', $id); ?>
