@@ -28,3 +28,10 @@
 
 	<?php do_action('vindi_pix_form_end', $id); ?>
 </fieldset>
+
+<dialog
+    id="vindi-pix-dialog"
+	class="vindi-pix-dialog"
+>
+  
+</dialog>
