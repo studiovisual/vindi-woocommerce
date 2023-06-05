@@ -13,7 +13,7 @@
 	</div>
 <?php endif; ?>
 
-<fieldset>
+<vindi-pix>
 	<?php do_action('vindi_pix_form_start', $id); ?>
 
 	<div class="vindi-invoice-description">
@@ -27,11 +27,56 @@
 	</div>
 
 	<?php do_action('vindi_pix_form_end', $id); ?>
-</fieldset>
 
-<dialog
-    id="vindi-pix-dialog"
-	class="vindi-pix-dialog"
->
-  
-</dialog>
+	<dialog
+		id="vindi-pix-dialog"
+		class="vindi-pix-dialog"
+	>
+		<div class="vindi-pix-dialog__content">
+			<h3 class="vindi-pix-dialog__title"><?php _e('Gere o código para realizar o pagamento', VINDI); ?></h3>
+
+			<ul class="vindi-pix-dialog__list">
+				<li><?php _e('Copie o código ou utilize o QR code abaixo para iniciar o pagamento', VINDI); ?></li>
+				<li><?php _e('Acesse seu Internet Banking ou app de pagamentos', VINDI); ?></li>
+				<li><?php _e('Cole o código e realize o pagamento', VINDI); ?></li>
+			</ul>
+
+			<img class="vindi-pix-dialog__image" src="" />
+
+			<input class="vindi-pix-dialog__input" type="text" readonly value="3-2138210-38-02130-21930-123912.revistaoeste.com.br/21390i1dsadsapk" />
+
+			<a class="vindi-pix-dialog__button" href="#">Copiar código</a>
+		</div>
+
+		<footer class="vindi-pix-dialog__footer">
+      <!-- <div class="vindi-pix-dialog__loading">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div> -->
+
+			<h4 class="vindi-pix-dialog__footer-title">Estamos aguardando o pagamento ...</h4>
+
+			<h5 class="vindi-pix-dialog__footer-subtitle">
+        <img src="<?= plugins_url('/assets/images/clock.svg', plugin_dir_path(__FILE__)) ?>" />
+
+        Pague e será creditado na hora.
+      </h5>
+		</footer>
+
+		<p class="vindi-pix-dialog__info">
+			Ainda não identificamos seu pagamento, <br />
+			mas você <a href="<?= home_url() ?>">poderá acessar o site</a> enquanto ocorre o processamento. <br />
+			Notificaremos assim que o estiver OK.
+		</p>
+	</dialog>
+</vindi-pix>
