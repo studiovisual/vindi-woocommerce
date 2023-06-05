@@ -51,20 +51,7 @@
 		</div>
 
 		<footer class="vindi-pix-dialog__footer">
-      <!-- <div class="vindi-pix-dialog__loading">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div> -->
+      <?php do_action('vindi_pix_dialog_footer_start', $id); ?>
 
 			<h4 class="vindi-pix-dialog__footer-title">Estamos aguardando o pagamento...</h4>
 
@@ -73,6 +60,8 @@
 
         Pague e será creditado na hora.
       </h5>
+
+      <?php do_action('vindi_pix_dialog_footer_end', $id); ?>
 		</footer>
 
 		<p class="vindi-pix-dialog__info">

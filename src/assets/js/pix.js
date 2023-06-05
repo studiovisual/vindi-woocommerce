@@ -7,6 +7,9 @@ class vindiPix extends HTMLElement {
     this.dialog = document.getElementById('vindi-pix-dialog');
     this.image  = this.dialog?.querySelector('.vindi-pix-dialog__image');
     this.input  = this.dialog?.querySelector('.vindi-pix-dialog__input');
+    this.button = this.dialog?.querySelector('.vindi-pix-dialog__button');
+
+    this.button?.addEventListener('click', (event) => this.copy(event));
   }
 
   showDialog(transaction) {
@@ -21,6 +24,17 @@ class vindiPix extends HTMLElement {
       this.input.value = response['qrcode_original_path'];
     
     this.dialog?.showModal();
+  }
+
+  async copy(event) {
+    event.preventDefault();
+
+    try {
+        await navigator.clipboard.writeText(this.input.value);
+    }
+    catch(error) {
+        console.log('copy error', error);
+    }
   }
 
 }
