@@ -5,9 +5,21 @@ class vindiPix extends HTMLElement {
     super();
 
     this.dialog = document.getElementById('vindi-pix-dialog');
+    this.image  = this.dialog?.querySelector('.vindi-pix-dialog__image');
+    this.input  = this.dialog?.querySelector('.vindi-pix-dialog__input');
   }
 
-  showDialog() {
+  showDialog(transaction) {
+    if(!transaction)
+      return;
+
+    const response = transaction['gateway_response_fields'];
+
+    if(this.image)
+      this.image.src = response['qrcode_path'];
+    if(this.input)
+      this.input.value = response['qrcode_original_path'];
+    
     this.dialog?.showModal();
   }
 

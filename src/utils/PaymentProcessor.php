@@ -1153,7 +1153,8 @@ class VindiPaymentProcessor
         $this->order->update_status($status, $status_message);
 
         return array(
-            'result' => 'success',
+            'result'   => 'success',
+            'bills'    => $bills,
             'redirect' => $this->order->get_checkout_order_received_url(),
         );
     }

@@ -41,7 +41,9 @@
 				<li><?php _e('Cole o código e realize o pagamento', VINDI); ?></li>
 			</ul>
 
-			<img class="vindi-pix-dialog__image" src="" />
+			<div class="vindi-pix-dialog__image-container">
+				<img class="vindi-pix-dialog__image" src="" />
+			</div>
 
 			<input class="vindi-pix-dialog__input" type="text" readonly value="3-2138210-38-02130-21930-123912.revistaoeste.com.br/21390i1dsadsapk" />
 
@@ -64,7 +66,7 @@
         <div></div>
       </div> -->
 
-			<h4 class="vindi-pix-dialog__footer-title">Estamos aguardando o pagamento ...</h4>
+			<h4 class="vindi-pix-dialog__footer-title">Estamos aguardando o pagamento...</h4>
 
 			<h5 class="vindi-pix-dialog__footer-subtitle">
         <img src="<?= plugins_url('/assets/images/clock.svg', plugin_dir_path(__FILE__)) ?>" />
