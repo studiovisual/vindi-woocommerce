@@ -32,6 +32,10 @@
 		id="vindi-pix-dialog"
 		class="vindi-pix-dialog"
 	>
+		<a class="vindi-pix-dialog__close" href="<?= home_url() ?>">
+			<img src="<?= plugins_url('/assets/images/close.svg', plugin_dir_path(__FILE__)) ?>" />
+		</a>
+
 		<div class="vindi-pix-dialog__content">
 			<h3 class="vindi-pix-dialog__title"><?php _e('Gere o código para realizar o pagamento', VINDI); ?></h3>
 
