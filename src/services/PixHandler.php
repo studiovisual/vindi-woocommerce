@@ -20,7 +20,8 @@ define('WP_USE_THEMES', false);
 require(BASE_PATH . 'wp-load.php');
 require_once plugin_dir_path(__FILE__) . '../../vindi.php';
 
-$vindi = WC_Vindi_Payment::get_instance(false);
+$vindi    = WC_Vindi_Payment::get_instance(false);
+$interval = $vindi->settings->get_pix_check_interval() ?? 5;
 
 while (true) {
     echo "\n\n";
@@ -37,5 +38,5 @@ while (true) {
     if(connection_aborted() || (!empty($bill) && $bill['status'] == 'paid')) 
         break;
 
-    sleep(5);
+    sleep($interval);
 }
