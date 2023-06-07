@@ -178,7 +178,7 @@ class VindiWebhooks
     }
 
     update_post_meta($order->get_id(), 'vindi_order', $vindi_order);
-    $order->set_payment_method($data->bill->charges[0]->payment_method->code == 'credit_card' ? 'vindi-credit-card' : 'vindi-bank-slip');
+    $order->set_payment_method($data->bill->charges[0]->payment_method->code == 'credit_card' ? 'vindi-credit-card' : ($data->bill->charges[0]->payment_method->code == 'bank_slip' ? 'vindi-bank-slip' : 'vindi-pix'));
 
     // Order informations always be updated in last array element
     $vindi_order_info = end($vindi_order);
