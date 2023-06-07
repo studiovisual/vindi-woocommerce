@@ -28,7 +28,7 @@ class WC_Vindi_Payment extends AbstractInstance
   /**
    * @var VindiSettings
    */
-  private $settings;
+  public $settings;
 
   /**
    * @var VindiControllers
@@ -125,11 +125,11 @@ class WC_Vindi_Payment extends AbstractInstance
     return plugin_dir_path(__FILE__);
   }
 
-  public static function get_instance()
+  public static function get_instance($check = true)
   {
     require_once self::getPath() . '/utils/FrontendFilesLoader.php';
 
-    if (VindiDependencies::check()) {
+    if ($check != true || VindiDependencies::check()) {
       // If the single instance hasn't been set, set it now.
       if (null == self::$instance) {
         self::$instance = new self;

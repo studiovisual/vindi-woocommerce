@@ -4,19 +4,20 @@ class vindiPix extends HTMLElement {
     // establish prototype chain
     super();
 
-    this.dialog = document.getElementById('vindi-pix-dialog');
-    this.image  = this.dialog?.querySelector('.vindi-pix-dialog__image');
-    this.input  = this.dialog?.querySelector('.vindi-pix-dialog__input');
-    this.button = this.dialog?.querySelector('.vindi-pix-dialog__button');
+    this.dialog       = document.getElementById('vindi-pix-dialog');
+    this.image        = this.dialog?.querySelector('.vindi-pix-dialog__image');
+    this.input        = this.dialog?.querySelector('.vindi-pix-dialog__input');
+    this.button       = this.dialog?.querySelector('.vindi-pix-dialog__button');
+    this.eventSuccess = new CustomEvent('success');
 
     this.button?.addEventListener('click', (event) => this.copy(event));
   }
 
-  showDialog(transaction) {
-    if(!transaction)
+  showDialog(bill) {
+    if(!bill)
       return;
 
-    const response = transaction['gateway_response_fields'];
+    const response = bill.charges[0].last_transaction['gateway_response_fields'];
 
     if(this.image)
       this.image.src = response['qrcode_path'];
@@ -24,6 +25,7 @@ class vindiPix extends HTMLElement {
       this.input.value = response['qrcode_original_path'];
     
     this.dialog?.showModal();
+    this.registerEventSource(bill);
   }
 
   async copy(event) {
@@ -35,6 +37,24 @@ class vindiPix extends HTMLElement {
     catch(error) {
         console.log('copy error', error);
     }
+  }
+
+  registerEventSource(bill) {
+    if(!bill)
+      return;
+
+    const evtSource = new EventSource(`${window.vindi_woocommerce_pix.pix_handler}?id=${bill['id']}`);
+
+    evtSource.onerror = (err) => console.error("EventSource failed:", err);
+
+    evtSource.onmessage = (event) => {
+      if(event.data == 'paid') {
+        this.dialog?.close();
+        evtSource.close();
+
+        this.dispatchEvent(this.eventSuccess);
+      }
+    };
   }
 
 }

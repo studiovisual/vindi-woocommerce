@@ -44,6 +44,14 @@ class FrontendFilesLoader {
         'payment_profiles_endpoint' => 'https://' . ($this->vindi_settings->get_is_active_sandbox() == 'yes' ? 'sandbox-' : '') . 'app.vindi.com.br/api/v1/public/payment_profiles',
       )
     );
+
+    wp_localize_script(
+      'vindi_woocommerce_pix_js',
+      'vindi_woocommerce_pix',
+      array(
+        'pix_handler' => esc_url(plugins_url('services/PixHandler.php', dirname(__FILE__))),
+      )
+    );
   }
 
 }
