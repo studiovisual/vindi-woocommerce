@@ -28,7 +28,7 @@ class WC_Vindi_Payment extends AbstractInstance
   /**
    * @var VindiSettings
    */
-  public $settings;
+  private $settings;
 
   /**
    * @var VindiControllers
@@ -105,7 +105,6 @@ class WC_Vindi_Payment extends AbstractInstance
     require_once $this->getPath() . '/includes/admin/Settings.php';
     require_once $this->getPath() . '/includes/gateways/CreditPayment.php';
     require_once $this->getPath() . '/includes/gateways/BankSlipPayment.php';
-    require_once $this->getPath() . '/includes/gateways/PixPayment.php';
     require_once $this->getPath() . '/utils/SubscriptionStatusHandler.php';
     require_once $this->getPath() . '/utils/InterestPriceHandler.php';
 
@@ -125,11 +124,11 @@ class WC_Vindi_Payment extends AbstractInstance
     return plugin_dir_path(__FILE__);
   }
 
-  public static function get_instance($check = true)
+  public static function get_instance()
   {
     require_once self::getPath() . '/utils/FrontendFilesLoader.php';
 
-    if ($check != true || VindiDependencies::check()) {
+    if (VindiDependencies::check()) {
       // If the single instance hasn't been set, set it now.
       if (null == self::$instance) {
         self::$instance = new self;
@@ -148,7 +147,6 @@ class WC_Vindi_Payment extends AbstractInstance
   {
     $methods[] = new VindiCreditGateway($this->settings, $this->controllers);
     $methods[] = new VindiBankSlipGateway($this->settings, $this->controllers);
-    $methods[] = new VindiPixGateway($this->settings, $this->controllers);
 
     return $methods;
   }

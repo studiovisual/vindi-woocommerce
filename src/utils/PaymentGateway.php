@@ -190,7 +190,7 @@ abstract class VindiPaymentGateway extends WC_Payment_Gateway_CC
     }
 
     try {
-      $response = $payment->process(); 
+      $response = $payment->process();
       $order->reduce_order_stock();
     } catch (Exception $e) {
       $response = array(
