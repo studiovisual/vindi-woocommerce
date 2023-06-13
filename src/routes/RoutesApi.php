@@ -355,40 +355,39 @@ class VindiRoutes
     return false;
   }
 
-  public function getPaymentMethods() {
-    if(false === ($payment_methods = get_transient('vindi_payment_methods'))) {
+  public function getPaymentMethods()
+  {
+    if (false === ($payment_methods = get_transient('vindi_payment_methods'))) {
+
       $payment_methods = array(
         'credit_card' => array(),
         'bank_slip'   => false,
-        'pix'         => false,
       );
 
       $response = $this->api->request('payment_methods', 'GET');
 
-      if(false == $response || !isset($response['payment_methods']))
+      if (false == $response || !isset($response['payment_methods']))
         return false;
 
-      foreach($response['payment_methods'] as $method) {
-        if('active' !== $method['status'])
+      foreach ($response['payment_methods'] as $method) {
+        if ('active' !== $method['status']) {
           continue;
+        }
 
-        if('PaymentMethod::CreditCard' === $method['type']) {
+        if ('PaymentMethod::CreditCard' === $method['type']) {
           $payment_methods['credit_card'] = array_merge(
             $payment_methods['credit_card'],
             $method['payment_companies']
           );
-        } 
-        else if('PaymentMethod::BankSlip' === $method['type'] || 'PaymentMethod::OnlineBankSlip' === $method['type'])
+        } else if ('PaymentMethod::BankSlip' === $method['type'] || 'PaymentMethod::OnlineBankSlip' === $method['type']) {
           $payment_methods['bank_slip'] = true;
-        else if('PaymentMethod::Pix' === $method['type'])
-          $payment_methods['pix'] = true;
+        }
       }
 
       set_transient('vindi_payment_methods', $payment_methods, 1 * HOUR_IN_SECONDS);
     }
 
     $this->api->accept_bank_slip = $payment_methods['bank_slip'];
-    $this->api->accept_pix       = $payment_methods['pix'];
 
     return $payment_methods;
   }
@@ -466,13 +465,6 @@ class VindiRoutes
     }
 
     return $this->api->accept_bank_slip;
-  }
-
-  public function acceptPix() {
-    if(null === $this->api->accept_pix)
-      $this->getPaymentMethods();
-
-    return $this->api->accept_pix;
   }
 
   /**

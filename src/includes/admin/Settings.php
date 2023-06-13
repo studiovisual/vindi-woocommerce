@@ -150,12 +150,6 @@ class VindiSettings extends WC_Settings_API
         'description'      => __('A Chave da API púplica de sua conta na Vindi. ' . $prospects_url, VINDI),
         'default'          => '',
       ),
-      'pix_check_interval' => array(
-        'title'            => __('Verificar compra PIX', VINDI),
-        'type'             => 'number',
-        'description'      => __('Intervalo de tempo em segundos para verificar se a compra via PIX foi paga.', VINDI),
-        'default'          => 5,
-      ),
       'send_nfe_information' => array(
         'title'            => __('Emissão de NFe\'s', VINDI),
         'label'            => __('Enviar informações para emissão de NFe\'s', VINDI),
@@ -246,14 +240,6 @@ class VindiSettings extends WC_Settings_API
    **/
   public function get_api_key_public() {
     return $this->settings['api_key_public'];
-  }
-
-  /**
-   * Get Vindi API public Key
-   * @return string
-   **/
-  public function get_pix_check_interval() {
-    return $this->settings['pix_check_interval'];
   }
 
   /**
