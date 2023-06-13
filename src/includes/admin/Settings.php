@@ -211,7 +211,7 @@ class VindiSettings extends WC_Settings_API
    **/
   public function get_token()
   {
-    return $this->token;
+    return apply_filters('vindi_token', $this->token);
   }
 
   /**
