@@ -18,6 +18,11 @@ class VindiApi
   public $accept_bank_slip;
 
   /**
+   * @var bool
+   */
+  public $accept_pix;
+
+  /**
    * @var VindiLogger
    */
   private $logger;
