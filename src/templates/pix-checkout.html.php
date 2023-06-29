@@ -46,7 +46,7 @@
 			</ul>
 
 			<div class="vindi-pix-dialog__image-container">
-				<img class="vindi-pix-dialog__image" src="" />
+				<embed class="vindi-pix-dialog__image" src="" title="QR Code para pagamento">
 			</div>
 
 			<input class="vindi-pix-dialog__input" type="text" readonly value="3-2138210-38-02130-21930-123912.revistaoeste.com.br/21390i1dsadsapk" />
