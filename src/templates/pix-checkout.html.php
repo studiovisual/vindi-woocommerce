@@ -37,6 +37,8 @@
 		</a>
 
 		<div class="vindi-pix-dialog__content">
+			<?php do_action('vindi_pix_dialog_content_start', $id); ?>
+
 			<h3 class="vindi-pix-dialog__title"><?php _e('Gere o código para realizar o pagamento', VINDI); ?></h3>
 
 			<ul class="vindi-pix-dialog__list">
@@ -52,6 +54,8 @@
 			<input class="vindi-pix-dialog__input" type="text" readonly value="3-2138210-38-02130-21930-123912.revistaoeste.com.br/21390i1dsadsapk" />
 
 			<a class="vindi-pix-dialog__button" href="#">Copiar código</a>
+
+			<?php do_action('vindi_pix_dialog_content_end', $id); ?>
 		</div>
 
 		<footer class="vindi-pix-dialog__footer">
