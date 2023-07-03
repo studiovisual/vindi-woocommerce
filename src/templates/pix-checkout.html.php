@@ -39,7 +39,7 @@
 		<div class="vindi-pix-dialog__content">
 			<?php do_action('vindi_pix_dialog_content_start', $id); ?>
 
-			<h3 class="vindi-pix-dialog__title"><?php _e('Gere o código para realizar o pagamento', VINDI); ?></h3>
+			<h3 class="vindi-pix-dialog__title"><?php _e('Código gerado com sucesso', VINDI); ?></h3>
 
 			<ul class="vindi-pix-dialog__list">
 				<li><?php _e('Copie o código ou utilize o QR code abaixo para iniciar o pagamento', VINDI); ?></li>
