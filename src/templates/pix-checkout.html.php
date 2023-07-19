@@ -58,24 +58,26 @@
 			<?php do_action('vindi_pix_dialog_content_end', $id); ?>
 		</div>
 
-		<footer class="vindi-pix-dialog__footer">
-      <?php do_action('vindi_pix_dialog_footer_start', $id); ?>
+		<?php if(apply_filters('vindi_pix_dialog_show_footer', true)): ?>
+			<footer class="vindi-pix-dialog__footer">
+				<?php do_action('vindi_pix_dialog_footer_start', $id); ?>
 
-			<h4 class="vindi-pix-dialog__footer-title">Estamos aguardando o pagamento...</h4>
+				<h4 class="vindi-pix-dialog__footer-title">Estamos aguardando o pagamento...</h4>
 
-			<h5 class="vindi-pix-dialog__footer-subtitle">
-        <img src="<?= plugins_url('/assets/images/clock.svg', plugin_dir_path(__FILE__)) ?>" />
+				<h5 class="vindi-pix-dialog__footer-subtitle">
+					<img src="<?= plugins_url('/assets/images/clock.svg', plugin_dir_path(__FILE__)) ?>" />
 
-        Pague e será creditado na hora.
-      </h5>
+					Pague e será creditado na hora.
+				</h5>
 
-      <?php do_action('vindi_pix_dialog_footer_end', $id); ?>
-		</footer>
+				<?php do_action('vindi_pix_dialog_footer_end', $id); ?>
+			</footer>
+		<?php endif; ?>
 
-		<p class="vindi-pix-dialog__info">
-			Ainda não identificamos seu pagamento, <br />
-			mas você <a href="<?= home_url() ?>">poderá acessar o site</a> enquanto ocorre o processamento. <br />
-			Notificaremos assim que o estiver OK.
-		</p>
+		<?php if(apply_filters('vindi_pix_dialog_show_info', true)): ?>
+			<p class="vindi-pix-dialog__info">
+				<?= apply_filters('vindi_pix_dialog_show_info', 'Ainda não identificamos seu pagamento, <br /> mas você <a href="' . home_url() .'">poderá acessar o site</a> enquanto ocorre o processamento. <br /> Notificaremos assim que o estiver OK.') ?>
+			</p>
+		<?php endif; ?>
 	</dialog>
 </vindi-pix>

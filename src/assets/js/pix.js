@@ -27,7 +27,7 @@ class vindiPix extends HTMLElement {
       this.input.value = response['qrcode_original_path'];
     
     this.dialog?.showModal();
-    this.registerEventSource(bill);
+    // this.registerEventSource(bill);
   }
 
   async copy(event) {
