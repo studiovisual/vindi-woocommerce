@@ -204,7 +204,29 @@ class vindiCreditCard extends HTMLElement {
     this.new_cc_data?.querySelectorAll('input, select')?.forEach(element => {
       element.required = this.payment_method.checked && !this.old_cc_data;
       element.disabled = !this.payment_method.checked && this.old_cc_data;
+      
+      if(!element.required) {
+        element.setCustomValidity('');
+      }
     });
+
+    if(this.payment_method.checked) {
+      if(this.name.value !== '') {
+        this.validateName();
+      }
+      
+      if(this.cardnumber.value !== '') {
+        this.validateNumber();
+      }
+      
+      if(this.expirationdate.value !== '') {
+        this.validateExpirationDate();
+      }
+
+      if(this.securitycode.value !== '') {
+        this.validateSecurityCode();
+      }
+    }
 
     this.old_cc_data?.querySelectorAll('input')?.forEach(element => element.disabled = this.payment_method.checked);
 
