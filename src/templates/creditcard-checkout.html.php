@@ -35,7 +35,7 @@
   <?php endif; ?>
 
   <div id="vindi-new-cc-data" class='vindi-new-cc-data' style="<?php if(!empty($user_payment_profile)) echo 'display: none'; ?>">
-    <div class="vindi_cc_card-container vindi_cc_preload">
+    <div class="vindi_cc_card-container vindi_cc_preload" <?php do_action('vindi_card_container_attributes'); ?>>
       <div id="vindi_cc_creditcard" class="vindi_cc_creditcard">
         <div class="front">
           <div id="vindi_cc_ccsingle"></div>
@@ -140,7 +140,7 @@
           <span class="required">*</span>
         </label>
 
-        <input id="vindi_cc_cardnumber" name="vindi_cc_number" type="tel" inputmode="numeric" autocomplete="off" placeholder="0000 0000 0000 0000">
+        <input id="vindi_cc_cardnumber" name="vindi_cc_number" type="tel" inputmode="numeric" autocomplete="off" placeholder="0000 0000 0000 0000" <?php do_action('vindi_cc_cardnumber'); ?>>
 
         <svg id="vindi_cc_ccicon" class="vindi_cc_ccicon" width="750" height="471" viewBox="0 0 750 471" version="1.1" xmlns="http://www.w3.org/2000/svg"
           xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -158,7 +158,7 @@
           <span class="required">*</span>
         </label>
 
-        <input id="vindi_cc_name" name="vindi_cc_fullname" maxlength="26" type="text" placeholder="Até 26 caracteres">
+        <input id="vindi_cc_name" name="vindi_cc_fullname" maxlength="26" type="text" placeholder="Até 26 caracteres" <?php do_action('vindi_cc_name'); ?>>
 
         <small>Digite um nome válido</small>
 
@@ -172,7 +172,7 @@
           <span class="required">*</span>
         </label>
 
-        <input id="vindi_cc_expirationdate" type="tel" inputmode="numeric" placeholder="mm/aa" autocomplete="off">
+        <input id="vindi_cc_expirationdate" type="tel" inputmode="numeric" placeholder="mm/aa" autocomplete="off" <?php do_action('vindi_cc_expirationdate'); ?>>
 
         <small>Digite uma data válida</small>
 
@@ -186,7 +186,7 @@
           <span class="required">*</span>
         </label>
 
-        <input id="vindi_cc_securitycode" name="vindi_cc_cvc" type="tel" inputmode="numeric" placeholder="000" autocomplete="off">
+        <input id="vindi_cc_securitycode" name="vindi_cc_cvc" type="tel" inputmode="numeric" placeholder="000" autocomplete="off" <?php do_action('vindi_cc_securitycode'); ?>>
 
         <small>Digite um cvv válido</small>
 
