@@ -31,6 +31,7 @@
 	<dialog
 		id="vindi-pix-dialog"
 		class="vindi-pix-dialog"
+		<?php do_action('vindi_pix_dialog'); ?>
 	>
 		<a class="vindi-pix-dialog__close" href="<?= home_url() ?>" aria-label="Fechar">
 			<img src="<?= plugins_url('/assets/images/close.svg', plugin_dir_path(__FILE__)) ?>" />
@@ -47,13 +48,13 @@
 				<li><?php _e('Cole o código e realize o pagamento', VINDI); ?></li>
 			</ul>
 
-			<div class="vindi-pix-dialog__image-container">
+			<div class="vindi-pix-dialog__image-container" <?php do_action('vindi_pix_qrcode'); ?>>
 				<embed class="vindi-pix-dialog__image" src="" title="QR Code para pagamento">
 			</div>
 
-			<input class="vindi-pix-dialog__input" type="text" readonly value="3-2138210-38-02130-21930-123912.revistaoeste.com.br/21390i1dsadsapk" />
+			<input class="vindi-pix-dialog__input" type="text" readonly value="3-2138210-38-02130-21930-123912.revistaoeste.com.br/21390i1dsadsapk" <?php do_action('vindi_pix_code'); ?> />
 
-			<a class="vindi-pix-dialog__button" href="#">Copiar código</a>
+			<a class="vindi-pix-dialog__button" href="#" <?php do_action('vindi_pix_copy'); ?>>Copiar código</a>
 
 			<?php do_action('vindi_pix_dialog_content_end', $id); ?>
 		</div>
