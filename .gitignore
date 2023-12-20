@@ -146,3 +146,5 @@ temp/
 
 # Compiladores de CSS
 config.codekit3
+
+.idea
