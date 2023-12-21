@@ -27,6 +27,7 @@ class PlansController {
     add_action('wp_insert_post', array($this, 'create'), 10, 3);
     add_action('wp_trash_post',  array($this, 'trash'), 10, 1);
     add_action('untrash_post',   array($this, 'untrash'), 10, 1);
+    add_action('save_post',   array($this, 'update_on_save'), 10, 1);
   }
 
   /**
@@ -270,7 +271,7 @@ class PlansController {
             'billing_trigger_day'  => $trigger_day,
             'billing_cycles'       => ($product->get_meta('_subscription_length') == 0) ? null : $product->get_meta('_subscription_length'),
             'code'                 => 'WC-' . $data['id'],
-            'installments'         => 1,
+            'installments'         => safe_get_field('installments',$post_id),
             'status'               => ($data['status'] == 'publish') ? 'active' : 'inactive',
           )
         );
@@ -333,7 +334,7 @@ class PlansController {
         'billing_trigger_day'  => $trigger_day,
         'billing_cycles'       => ($product->get_meta('_subscription_length') == 0) ? null : $product->get_meta('_subscription_length'),
         'code'                 => 'WC-' . $data['id'],
-        'installments'         => 1,
+        'installments'         => safe_get_field('installments',$post_id),
         'status'               => ($data['status'] == 'publish') ? 'active' : 'inactive',
       )
     );
@@ -449,4 +450,15 @@ class PlansController {
       return 0;
   }
 
+  public function update_on_save($post_id) {
+      $post = get_post($post_id);
+
+      if ($post->post_type != 'product' || wp_is_post_autosave($post_id) || $post->post_status !== 'publish')
+          return;
+
+      if(strpos($_SERVER['REQUEST_URI'], 'post.php') === false || !$_SERVER['REQUEST_METHOD'] === 'POST')
+          return;
+
+      $this->update($post_id);
+  }
 }

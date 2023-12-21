@@ -4,11 +4,13 @@ class vindiPix extends HTMLElement {
     // establish prototype chain
     super();
 
-    this.dialog       = document.getElementById('vindi-pix-dialog');
-    this.image        = this.dialog?.querySelector('.vindi-pix-dialog__image');
-    this.input        = this.dialog?.querySelector('.vindi-pix-dialog__input');
-    this.button       = this.dialog?.querySelector('.vindi-pix-dialog__button');
-    this.eventSuccess = new CustomEvent('success');
+    this.dialog           = document.getElementById('vindi-pix-dialog');
+    this.image            = this.dialog?.querySelector('.vindi-pix-dialog__image');
+    this.input            = this.dialog?.querySelector('.vindi-pix-dialog__input');
+    this.button           = this.dialog?.querySelector('.vindi-pix-dialog__button');
+    this.eventSuccess     = new CustomEvent('success');
+    this.eventCopySuccess = new CustomEvent('copysuccess');
+    this.eventCopyError   = new CustomEvent('copyerror');
 
     this.button?.addEventListener('click', (event) => this.copy(event));
   }
@@ -25,7 +27,7 @@ class vindiPix extends HTMLElement {
       this.input.value = response['qrcode_original_path'];
     
     this.dialog?.showModal();
-    this.registerEventSource(bill);
+    // this.registerEventSource(bill);
   }
 
   async copy(event) {
@@ -33,9 +35,13 @@ class vindiPix extends HTMLElement {
 
     try {
         await navigator.clipboard.writeText(this.input.value);
+
+        this.dispatchEvent(this.eventCopySuccess);
     }
     catch(error) {
-        console.log('copy error', error);
+        console.error('copy error', error);
+
+        this.dispatchEvent(this.eventCopyError);
     }
   }
 
