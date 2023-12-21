@@ -253,7 +253,6 @@ class VindiCreditGateway extends VindiPaymentGateway
       $user_payment_profile['card_number']     = sprintf('**** **** **** %s', $payment_profile['card_number_last_four']);
     }
 
-    // WC()->session->set('current_payment_profile', $payment_profile); 
     return $user_payment_profile;
   }
 
@@ -270,7 +269,6 @@ class VindiCreditGateway extends VindiPaymentGateway
 
         if (!empty($plan_id)) {
           $plan = $this->routes->getPlan($plan_id);
-//          dd($this->routes);
           if($plan) {
             if($installments == 0)
               $installments = $plan['installments'];
