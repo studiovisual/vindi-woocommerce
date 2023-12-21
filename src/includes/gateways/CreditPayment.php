@@ -253,23 +253,22 @@ class VindiCreditGateway extends VindiPaymentGateway
       $user_payment_profile['card_number']     = sprintf('**** **** **** %s', $payment_profile['card_number_last_four']);
     }
 
-    // WC()->session->set('current_payment_profile', $payment_profile); 
     return $user_payment_profile;
   }
 
-  protected function getInstallments() {    
+  protected function getInstallments() {
     if($this->is_single_order())
       return $this->installments;
 
     $installments = 0;
 
+
     if(!apply_filters('vindi_skip_installments', false)) {
       foreach($this->vindi_settings->woocommerce->cart->cart_contents as $item) {
         $plan_id = $item['data']->get_meta('vindi_plan_id');
-        
+
         if (!empty($plan_id)) {
           $plan = $this->routes->getPlan($plan_id);
-          
           if($plan) {
             if($installments == 0)
               $installments = $plan['installments'];

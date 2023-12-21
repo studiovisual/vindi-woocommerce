@@ -192,25 +192,30 @@
 
         <?php do_action('vindi_cc_after_securitycode') ?>
       </div>
+
+        <?php if (isset($installments) && !empty($installments)): ?>
+            <div class="col-span-2">
+                <label for="vindi_cc_installments"><?php _e("Número de Parcelas", VINDI); ?>
+                    <span class="required">*</span>
+                </label>
+                <select name="vindi_cc_installments" class="input-text" style="width: 100%">
+                    <?php foreach($installments as $installment => $price): ?>
+                        <option value="<?php echo $installment; ?>"><?php echo sprintf(__('%dx de %s', VINDI), $installment, wc_price($price)); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        <?php endif; ?>
+
       <input name="vindi_cc_paymentcompany" type="hidden">
       <input name="vindi_cc_monthexpiry" type="hidden">
       <input name="vindi_cc_yearexpiry" type="hidden">
       <input name="vindi_cc_gateway_token" type="hidden">
+
+
     </div>
   </div>
 
-  <?php if (isset($installments)): ?>
-    <p class="form-row form-row-wide">
-      <label for="vindi_cc_installments"><?php _e("Número de Parcelas", VINDI); ?>
-        <span class="required">*</span>
-      </label>
-      <select name="vindi_cc_installments" class="input-text" style="width: 100%">
-        <?php foreach($installments as $installment => $price): ?>
-          <option value="<?php echo $installment; ?>"><?php echo sprintf(__('%dx de %s', VINDI), $installment, wc_price($price)); ?></option>
-        <?php endforeach; ?>
-      </select>
-    </p>
-  <?php endif; ?>
+
   <div class="clear"></div>
 
   <?php do_action('vindi_credit_card_form_end', $id); ?>
