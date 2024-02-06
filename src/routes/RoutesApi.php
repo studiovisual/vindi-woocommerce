@@ -377,7 +377,7 @@ class VindiRoutes
             $payment_methods['credit_card'],
             $method['payment_companies']
           );
-        } 
+        }
         else if('PaymentMethod::BankSlip' === $method['type'] || 'PaymentMethod::OnlineBankSlip' === $method['type'])
           $payment_methods['bank_slip'] = true;
         else if('PaymentMethod::Pix' === $method['type'])
@@ -507,18 +507,43 @@ class VindiRoutes
     return false;
   }
 
-    public function hasPendingSubscriptionBills($subscription_id)
-    {
-        $bill_subscription_id = filter_var($subscription_id, FILTER_SANITIZE_NUMBER_INT);
-        $query = urlencode("subscription_id={$bill_subscription_id} status=pending");
+  public function hasPendingSubscriptionBills($subscription_id)
+  {
+      $bill_subscription_id = filter_var($subscription_id, FILTER_SANITIZE_NUMBER_INT);
+      $query = urlencode("subscription_id={$bill_subscription_id} status=pending");
 
-        $response = $this->api->request('bills?query=' . $query, 'GET');
+      $response = $this->api->request('bills?query=' . $query, 'GET');
 
-        if (empty($response['bills'])) {
-            return false;
-        }
+      if (empty($response['bills'])) {
+          return false;
+      }
 
-        return true;
-    }
+      return true;
+  }
+
+  public function getPeriod($subscription_id)
+  {
+    $queryParam = urlencode($subscription_id);
+    $query = sprintf("periods?page=1&per_page=1&query=subscription_id=%s&sort_by=subscription_id&sort_order=asc", $queryParam);
+    $response = $this->api->request($query, 'GET');
+
+    if(isset($response['periods'])) {
+      return $response['periods']['0']['id'];
+    };
+
+    return null;
+  }
+
+  public function advancePayment($period_id)
+  {
+    $query = sprintf("periods/%s/bill", urlencode($period_id));
+    $response = $this->api->request($query, 'POST');
+
+    if (isset($response['errors']))
+      return null;
+
+    return $response['bill'];
+  }
+
 }
 ?>
