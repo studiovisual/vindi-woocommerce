@@ -154,7 +154,7 @@ class VindiCreditGateway extends VindiPaymentGateway
     $id = $this->id;
 
     $cart = $this->vindi_settings->woocommerce->cart;
-    $total = $cart->total;
+    $total = $cart->total === "0.00" ? reset($cart->recurring_carts)->total :$cart->total;
     foreach ($cart->get_fees() as $index => $fee) {
       if($fee->name == __('Juros', VINDI)) {
         $total -= $fee->amount;
