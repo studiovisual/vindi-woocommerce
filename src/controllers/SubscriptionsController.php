@@ -43,11 +43,10 @@ class SubscriptionsController {
   function create($post_id, $post, $update, $recreated = false) {
     if(!is_admin() || wp_doing_ajax())
       return;
-
     // Check if the post is a draft
     if(strpos(get_post_status($post_id), 'draft') !== false)
       return;
-    
+
     // Check if the post is a subscription
     if(get_post_type($post_id) != 'shop_subscription')
       return;
@@ -56,6 +55,7 @@ class SubscriptionsController {
       return;
     // Check if it's a new post
     // The $update value is unreliable because of the auto_draft functionality
+
     if(!empty(get_post_meta($post_id, 'vindi_subscription_id', true))) 
       return $this->update($post_id);
 

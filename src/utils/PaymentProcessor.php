@@ -1,5 +1,8 @@
 <?php
 
+use App\Providers\Subscriptions;
+use Carbon\Carbon;
+
 class VindiPaymentProcessor
 {
     /**
@@ -980,7 +983,17 @@ class VindiPaymentProcessor
 
         $data['product_items'] = array_merge($data['product_items'], $this->build_product_items('subscription', $order_item));
 
+        $validity = $this->get_validity();
+
+        if (!is_null($validity)) {
+            $data['start_at'] = $validity;
+        }
+
         $subscription = $this->routes->createSubscription($data);
+        
+        if (!is_null($validity) && isset($subscription['id']) && !empty($subscription['id'])) {
+            $subscription['bill'] = $this->advancePayment($subscription['id']);
+        }
 
         if(!isset($subscription['id']) || empty($subscription['id'])) {
             $message = sprintf(__('Pagamento Falhou. (%s)', VINDI), $this->vindi_settings->api->last_error);
@@ -989,10 +1002,38 @@ class VindiPaymentProcessor
 
         $subscription['wc_id'] = $wc_subscription_id;
 
-        if(isset($subscription['bill']['id']))
+        if (isset($subscription['bill']['id'])) {
             update_post_meta($this->order->id, 'vindi_bill_id', $subscription['bill']['id']);
+        }
 
         return $subscription;
+    }
+
+    public function advancePayment($subscription_id) {
+        if (empty($subscription_id))
+            return null;
+
+        $periodId = $this->routes->getPeriod($subscription_id);
+
+        if (empty($periodId))
+            return null;
+
+        return $this->routes->advancePayment($periodId);
+    }
+
+    public function get_validity() {
+        $expires = Subscriptions::getUserSubscriptions(get_current_user_id());
+
+        if (!isset($expires['expires']))
+            return null;
+
+        $currentPlanDate = Carbon::parse($expires['expires'])->startOfDay();
+        $currentDate = Carbon::now()->timezone('America/Sao_Paulo')->startOfDay();
+
+        if ($currentPlanDate->gt($currentDate) && ($expires['subscription'] != "inactive"))
+            return $currentPlanDate->format("Y-m-d");
+
+        return null;
     }
 
     /**
