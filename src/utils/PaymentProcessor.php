@@ -1022,16 +1022,16 @@ class VindiPaymentProcessor
     }
 
     public function get_validity() {
-        $expires = Subscriptions::getUserSubscriptions(get_current_user_id());
+        $subscriptions = $this->routes->getSubscriptions(Subscriptions::getVindiUserId( get_current_user_id()));
 
-        if (!isset($expires['expires']))
-            return null;
-
-        $currentPlanDate = Carbon::parse($expires['expires'])->startOfDay();
-        $currentDate = Carbon::now()->timezone('America/Sao_Paulo')->startOfDay();
-
-        if ($currentPlanDate->gt($currentDate) && ($expires['subscription'] != "inactive"))
-            return $currentPlanDate->format("Y-m-d");
+        if (isset($subscriptions['subscriptions'])) {
+            foreach ($subscriptions['subscriptions'] as $subscription) {
+                if (isset($subscription['next_billing_at'])) {
+                    $vindiDate = Carbon::parse($subscription['next_billing_at'])->startOfDay();
+                    return $vindiDate->format("Y-m-d");
+                }
+            }
+        }
 
         return null;
     }
