@@ -1006,6 +1006,8 @@ class VindiPaymentProcessor
             update_post_meta($this->order->id, 'vindi_bill_id', $subscription['bill']['id']);
         }
 
+        $this->cancelOldSubscriptions();
+
         return $subscription;
     }
 
@@ -1034,6 +1036,28 @@ class VindiPaymentProcessor
         }
 
         return null;
+    }
+
+    public function cancelOldSubscriptions() {
+        $subscriptions = $this->routes->getSubscriptions(Subscriptions::getVindiUserId( get_current_user_id()));
+
+        if (isset($subscriptions['subscriptions'][0])) {
+            unset($subscriptions['subscriptions'][0]);
+            foreach ($subscriptions['subscriptions'] as $subscription) {
+                if ($subscription['status'] === 'future' || $subscription['status'] === 'active') {
+                    $suspended = $this->routes->suspendSubscription($subscription['id']);
+
+                    if (isset($suspended['subscription']['code'])) {
+                        $wcSubscriptionId = str_replace('WC-', '', $suspended['subscription']['code']);
+                        $wcSubscription = wcs_get_subscription($wcSubscriptionId);
+
+                        if ($wcSubscription && !$wcSubscription->has_status('cancelled')) {
+                            $wcSubscription->update_status('cancelled');
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
