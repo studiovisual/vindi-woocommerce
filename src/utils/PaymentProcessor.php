@@ -1028,8 +1028,23 @@ class VindiPaymentProcessor
 
         if (isset($subscriptions['subscriptions'])) {
             foreach ($subscriptions['subscriptions'] as $subscription) {
+                if ($subscription['status'] === "canceled" || $subscription['status'] === "expired")
+                    continue;
+
+                $perild_id = $this->routes->getPeriod($subscription['id']);
+                $bill_id = $this->routes->getBillbyPeriod($perild_id);
+                $bill_status = $this->routes->getBillStatus($bill_id);
+
+                if ($bill_status !== "paid")
+                    continue;
+
                 if (isset($subscription['next_billing_at'])) {
+                    $currentTime = Carbon::now();
                     $vindiDate = Carbon::parse($subscription['next_billing_at'])->startOfDay();
+
+                    if ($vindiDate->lte($currentTime))
+                        continue;
+
                     return $vindiDate->format("Y-m-d");
                 }
             }
