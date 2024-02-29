@@ -1006,6 +1006,8 @@ class VindiPaymentProcessor
             update_post_meta($this->order->id, 'vindi_bill_id', $subscription['bill']['id']);
         }
 
+        $this->cancelOldSubscriptions();
+
         return $subscription;
     }
 
@@ -1022,18 +1024,55 @@ class VindiPaymentProcessor
     }
 
     public function get_validity() {
-        $expires = Subscriptions::getUserSubscriptions(get_current_user_id());
+        $subscriptions = $this->routes->getSubscriptions(Subscriptions::getVindiUserId( get_current_user_id()));
 
-        if (!isset($expires['expires']))
-            return null;
+        if (isset($subscriptions['subscriptions'])) {
+            foreach ($subscriptions['subscriptions'] as $subscription) {
+                if ($subscription['status'] === "canceled" || $subscription['status'] === "expired")
+                    continue;
 
-        $currentPlanDate = Carbon::parse($expires['expires'])->startOfDay();
-        $currentDate = Carbon::now()->timezone('America/Sao_Paulo')->startOfDay();
+                $perild_id = $this->routes->getPeriod($subscription['id']);
+                $bill_id = $this->routes->getBillbyPeriod($perild_id);
+                $bill_status = $this->routes->getBillStatus($bill_id);
 
-        if ($currentPlanDate->gt($currentDate) && ($expires['subscription'] != "inactive"))
-            return $currentPlanDate->format("Y-m-d");
+                if ($bill_status !== "paid")
+                    continue;
+
+                if (isset($subscription['next_billing_at'])) {
+                    $currentTime = Carbon::now();
+                    $vindiDate = Carbon::parse($subscription['next_billing_at'])->startOfDay();
+
+                    if ($vindiDate->lte($currentTime))
+                        continue;
+
+                    return $vindiDate->format("Y-m-d");
+                }
+            }
+        }
 
         return null;
+    }
+
+    public function cancelOldSubscriptions() {
+        $subscriptions = $this->routes->getSubscriptions(Subscriptions::getVindiUserId( get_current_user_id()));
+
+        if (isset($subscriptions['subscriptions'][0])) {
+            unset($subscriptions['subscriptions'][0]);
+            foreach ($subscriptions['subscriptions'] as $subscription) {
+                if ($subscription['status'] === 'future' || $subscription['status'] === 'active') {
+                    $suspended = $this->routes->suspendSubscription($subscription['id']);
+
+                    if (isset($suspended['subscription']['code'])) {
+                        $wcSubscriptionId = str_replace('WC-', '', $suspended['subscription']['code']);
+                        $wcSubscription = wcs_get_subscription($wcSubscriptionId);
+
+                        if ($wcSubscription && !$wcSubscription->has_status('cancelled')) {
+                            $wcSubscription->update_status('cancelled');
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

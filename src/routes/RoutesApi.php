@@ -545,5 +545,37 @@ class VindiRoutes
     return $response['bill'];
   }
 
+  public function getSubscriptions ($vindiUserId) {
+    $query = sprintf("subscriptions?page=1&per_page=25&query=customer_id='%s'&sort_by=created_at&sort_order=desc", urlencode("$vindiUserId"));
+    $response = $this->api->request($query, 'GET');
+
+    return $response;
+  }
+
+  public function getBillbyPeriod($period_id)
+  {
+    $queryParam = urlencode($period_id);
+    $query = sprintf("periods/%s", $queryParam);
+    $response = $this->api->request($query, 'GET');
+
+    if(isset($response['period'])) {
+      return $response['period']['usages'][0]['bill']['id'];
+    };
+
+    return null;
+  }
+
+  public function getBillStatus($bill_id)
+  {
+    $queryParam = urlencode($bill_id);
+    $query = sprintf("bills/%s", $queryParam);
+    $response = $this->api->request($query, 'GET');
+
+    if(isset($response['bill'])) {
+      return $response['bill']['status'];
+    };
+
+    return null;
+  }
 }
 ?>
