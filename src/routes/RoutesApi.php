@@ -545,5 +545,12 @@ class VindiRoutes
     return $response['bill'];
   }
 
+  public function getSubscriptions ($vindiUserId) {
+    $query = sprintf("subscriptions?page=1&per_page=25&query=customer_id='%s'&sort_by=created_at&sort_order=desc", urlencode("$vindiUserId"));
+    $response = $this->api->request($query, 'GET');
+
+    return $response;
+  }
+
 }
 ?>
