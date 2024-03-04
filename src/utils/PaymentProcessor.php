@@ -1045,6 +1045,13 @@ class VindiPaymentProcessor
                     if ($vindiDate->lte($currentTime))
                         continue;
 
+                    $currentTime->addYears(5);
+
+                    if ($vindiDate->lte($currentTime)) {
+                        $currentTime->subDays(2);
+                        return $currentTime->format("Y-m-d");
+                    }
+
                     return $vindiDate->format("Y-m-d");
                 }
             }
