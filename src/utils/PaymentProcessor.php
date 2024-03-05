@@ -230,8 +230,14 @@ class VindiPaymentProcessor
     function processOrder() {
         $customer = $this->getCustomer();
 
-        if(empty($customer))
-            $this->abort(__('Não foi possível obter os dados do cliente.', VINDI), true);
+        if(empty($customer)) {
+            $customerClass = new CustomerController($this->vindi_settings);
+            $user = wp_get_current_user();
+            $customer = $customerClass->create($user->ID);
+
+            if (!$customer)
+                $this->abort(__('Não foi possível obter os dados do cliente.', VINDI), true);
+        }
 
         $gateway_token = ''; 
  
