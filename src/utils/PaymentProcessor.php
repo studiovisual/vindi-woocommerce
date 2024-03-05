@@ -229,10 +229,18 @@ class VindiPaymentProcessor
      */
     function processOrder() {
         $customer = $this->getCustomer();
+        $user = wp_get_current_user();
+
+        if (!empty($customer)) {
+            if (!$this->routes->findCustomerById($customer)) {
+                $user = wp_get_current_user();
+                delete_user_meta( $user->ID, 'vindi_customer_id' );
+                $customer = '';
+            }
+        }
 
         if(empty($customer)) {
             $customerClass = new CustomerController($this->vindi_settings);
-            $user = wp_get_current_user();
             $customer = $customerClass->create($user->ID);
 
             if (!$customer)
