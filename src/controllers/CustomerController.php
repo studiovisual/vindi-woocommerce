@@ -35,7 +35,7 @@ class CustomerController {
    * @since 1.0.0
    * @version 1.0.0
    */
-  function create($user_id, $order = null) {
+  function create($user_id, $order = null, $returnId = false) {
     $customer    = new WC_Customer($user_id);
     $user        = $customer->get_data();
     $name        = (!$user['first_name']) ? $user['display_name'] : $user['first_name'] . ' ' . $user['last_name'];
@@ -104,7 +104,10 @@ class CustomerController {
     // Saving customer in the user meta WP
     if(isset($createdUser['id']))
       update_user_meta($user_id, 'vindi_customer_id', $createdUser['id']);
-      
+
+    if($returnId)
+        return $createdUser['id'];
+
     return $createdUser;
   }
 

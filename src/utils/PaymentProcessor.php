@@ -241,8 +241,7 @@ class VindiPaymentProcessor
 
         if(empty($customer)) {
             $customerClass = new CustomerController($this->vindi_settings);
-            $customer = $customerClass->create($user->ID);
-            sleep(0.4);
+            $customer = $customerClass->create($user->ID, null, true);
 
             if (!$customer)
                 $this->abort(__('Não foi possível obter os dados do cliente.', VINDI), true);
