@@ -236,6 +236,7 @@ class VindiApi
   public function request($endpoint, $method = 'POST', $data = array(), $data_to_log = null)
   {
     $url  = sprintf('%s%s', $this->base_path(), $endpoint);
+
     $body = $this->build_body($data);
 
     $request_id = rand();

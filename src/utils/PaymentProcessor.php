@@ -229,9 +229,29 @@ class VindiPaymentProcessor
      */
     function processOrder() {
         $customer = $this->getCustomer();
+        $user = wp_get_current_user();
 
-        if(empty($customer))
-            $this->abort(__('Não foi possível obter os dados do cliente.', VINDI), true);
+        if (!empty($customer)) {
+            $vindiCustomer = $this->routes->findCustomerById($customer);
+
+            if (!$vindiCustomer) {
+                $user = wp_get_current_user();
+                delete_user_meta( $user->ID, 'vindi_customer_id' );
+                $customer = '';
+            } elseif (is_null($vindiCustomer['registry_code']) || is_null($vindiCustomer['email'])) {
+                $customerClass = new CustomerController($this->vindi_settings);
+                $customerClass->delete($user->ID);
+                $customer = $customerClass->create($user->ID, null, true);
+            }
+        }
+
+        if(empty($customer)) {
+            $customerClass = new CustomerController($this->vindi_settings);
+            $customer = $customerClass->create($user->ID, null, true);
+
+            if (!$customer)
+                $this->abort(__('Não foi possível obter os dados do cliente.', VINDI), true);
+        }
 
         $gateway_token = ''; 
  
@@ -1044,6 +1064,13 @@ class VindiPaymentProcessor
 
                     if ($vindiDate->lte($currentTime))
                         continue;
+
+                    $currentTime->addYears(5);
+
+                    if ($vindiDate->lte($currentTime)) {
+                        $currentTime->subDays(2);
+                        return $currentTime->format("Y-m-d");
+                    }
 
                     return $vindiDate->format("Y-m-d");
                 }
