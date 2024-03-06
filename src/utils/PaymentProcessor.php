@@ -240,8 +240,8 @@ class VindiPaymentProcessor
                 $customer = '';
             } elseif (is_null($vindiCustomer['registry_code']) || is_null($vindiCustomer['email'])) {
                 $customerClass = new CustomerController($this->vindi_settings);
-                $customerUpdated = $customerClass->update($user->ID);
-                $customer = isset($customerUpdated['customer']['id']) ? $customerUpdated['customer']['id'] : '';
+                $customerClass->delete($user->ID);
+                $customer = $customerClass->create($user->ID, null, true);
             }
         }
 
