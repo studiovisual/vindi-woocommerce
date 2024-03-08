@@ -252,6 +252,13 @@ class vindiCreditCard extends HTMLElement {
 
       this.new_cc_data.style.display = 'block';
     }
+
+    const select = document.querySelector('#vindi_cc_installments_select');
+    const label = document.querySelector('#vindi_cc_installments_label');
+    const firstSelect = document.querySelector('.select-place-pimary');
+    select.name = "vindi_cc_installments";
+    label.htmlFor = "vindi_cc_installments";
+    firstSelect.innerHTML = '';
   }
 
   nameChanged() {

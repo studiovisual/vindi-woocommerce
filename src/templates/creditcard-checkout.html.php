@@ -22,11 +22,26 @@
         <br>
         <span class="vindi-old-payment-name"><?php echo $user_payment_profile['holder_name']; ?></span><br>
         <span class="vindi-old-payment-number"><?php echo $user_payment_profile['card_number']; ?></span>
-          
         <input class="vindi-old-cc-data-check" type="hidden" value='1' name="vindi-old-cc-data-check">
       </p>
 
-      <img class="vindi-old-paymentcompany" src="https://s3.amazonaws.com/recurrent/payment_companies/<?php echo $user_payment_profile['payment_company']?>.png" />
+      <div class="flex">
+          <div class="">
+            <img class="vindi-old-paymentcompany" src="https://s3.amazonaws.com/recurrent/payment_companies/<?php echo $user_payment_profile['payment_company']?>.png" />
+          </div>
+            <?php if (isset($installments) && !empty($installments)): ?>
+                <div class="input-text-slin w-full ml-2  select-place-pimary">
+                    <label for="vindi_cc_installments"><?php _e("Número de Parcelas", VINDI); ?>
+                        <span class="required">*</span>
+                    </label>
+                    <select name="vindi_cc_installments" class="input-text" id="vindi_cc_installments_1" style="width: 100%">
+                        <?php foreach($installments as $installment => $price): ?>
+                            <option value="<?php echo $installment; ?>"><?php echo sprintf(__('%dx de %s', VINDI), $installment, wc_price($price)); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            <?php endif; ?>
+        </div>
 
       <p class="form-row">
         <a id="vindi-change-card" href="#" class="vindi-change-card"><?php echo __('Usar outro cartão', VINDI); ?></a>
@@ -194,11 +209,11 @@
       </div>
 
         <?php if (isset($installments) && !empty($installments)): ?>
-            <div class="col-span-2">
-                <label for="vindi_cc_installments"><?php _e("Número de Parcelas", VINDI); ?>
+            <div class="col-span-2 select-place-secundary">
+                <label for="<?php echo empty($user_payment_profile) ? 'vindi_cc_installments' : '' ?>" id="vindi_cc_installments_label"><?php _e("Número de Parcelas", VINDI); ?>
                     <span class="required">*</span>
                 </label>
-                <select name="vindi_cc_installments" class="input-text" style="width: 100%">
+                <select name="<?php echo empty($user_payment_profile) ? 'vindi_cc_installments' : '' ?>" class="input-text" id="vindi_cc_installments_select" style="width: 100%">
                     <?php foreach($installments as $installment => $price): ?>
                         <option value="<?php echo $installment; ?>"><?php echo sprintf(__('%dx de %s', VINDI), $installment, wc_price($price)); ?></option>
                     <?php endforeach; ?>
