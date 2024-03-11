@@ -1066,8 +1066,8 @@ class VindiPaymentProcessor
                         continue;
 
                     $currentTime->addYears(5);
-
-                    if ($vindiDate->lte($currentTime)) {
+                    
+                    if ($vindiDate->gt($currentTime)) {
                         $currentTime->subDays(2);
                         return $currentTime->format("Y-m-d");
                     }
