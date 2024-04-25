@@ -33,7 +33,7 @@
 		class="vindi-pix-dialog"
 		<?php do_action('vindi_pix_dialog'); ?>
 	>
-		<a class="vindi-pix-dialog__close" href="<?= home_url() ?>" aria-label="Fechar">
+		<a class="vindi-pix-dialog__close" href="<?= apply_filters('vindi_pix_dialog_close_href', home_url()) ?>" aria-label="Fechar">
 			<img src="<?= plugins_url('/assets/images/close.svg', plugin_dir_path(__FILE__)) ?>" />
 		</a>
 
