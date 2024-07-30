@@ -96,6 +96,9 @@ class SubscriptionsController {
       $data['plan_id'] = $vindi_plan;
       $data['code']    = 'WC-' . $post_id;
     }
+   
+    if (is_admin())
+      $data['installments'] = 1;
 
     $subscriptionData = $this->routes->createSubscription($data);
 
