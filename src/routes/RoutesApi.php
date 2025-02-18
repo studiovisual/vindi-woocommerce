@@ -451,7 +451,7 @@ class VindiRoutes
       return false;
 
     $query    = urlencode("customer_id={$user_vindi_id} status=active type=PaymentProfile::CreditCard");
-    $response = $this->api->request('payment_profiles?per_page=1&query='.$query, 'GET');
+    $response = $this->api->request('payment_profiles?&query='.$query, 'GET');
 
     if (end($response['payment_profiles']) !== null)
       return end($response['payment_profiles']);
