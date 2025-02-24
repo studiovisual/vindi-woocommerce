@@ -577,5 +577,18 @@ class VindiRoutes
 
     return null;
   }
+
+  public function getBillByCustomer($customer_id)
+  {
+    $queryParam = urlencode($customer_id);
+    $query = sprintf("bills?page=1&per_page=1&query=customer_id=%s&sort_by=created_at&sort_order=desc", $queryParam);
+    $response = $this->api->request($query, 'GET');
+
+    if(isset($response['bills'])) {
+      return $response['bills'][0];
+    };
+
+    return null;
+  }
 }
 ?>
